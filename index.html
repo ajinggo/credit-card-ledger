@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="zh-CN" data-ui="organic-v41">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#fdfcf8" />
+    <title>信用卡管理账本 · Organic Glass</title>
+    <link rel="stylesheet" href="./styles.css?v=70" />
+    <link rel="stylesheet" href="./organic-liquid.css?v=70" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">跳到主要内容</a>
+    <div class="glows" aria-hidden="true"><span class="glow glow-1"></span><span class="glow glow-2"></span><span class="glow glow-3"></span></div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <!-- Confirm modal -->
+    <div id="confirmModal" class="modal-backdrop" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <h3 id="modalTitle">确认操作</h3>
+        <p id="modalMsg"></p>
+        <div class="modal-actions">
+          <button id="modalCancel" class="btn-ghost" type="button">取消</button>
+          <button id="modalConfirm" class="btn-outline danger" type="button">确认删除</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 卡片增/改 左侧抽屉 -->
+    <div id="cardFormOverlay" class="drawer-overlay card-form-overlay" hidden>
+      <form id="cardForm" class="card-form" action="javascript:void(0)" autocomplete="off">
+        <div class="drawer-head">
+          <div>
+            <span>Card Tools</span>
+            <h3 id="cardFormTitle">添加卡片</h3>
+          </div>
+          <button id="cardDrawerCloseButton" class="btn-ghost" type="button">关闭</button>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>卡片名称</span><input id="cardNameInput" type="text" placeholder="如：招行经典白" required /></label>
+          <label class="field"><span>卡片尾号</span><input id="cardLastFourInput" type="text" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="如：8888" /></label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>固定额度 ¥</span><input id="cardFixedInput" type="number" min="0" step="0.01" placeholder="0.00" /></label>
+          <label class="field"><span>临时总额度 ¥</span><input id="cardTempInput" type="number" min="0" step="0.01" placeholder="包含固定额度，如 50000" /></label>
+        </div>
+        <label class="field"><span>临额到期日</span><input id="cardExpiryInput" type="date" /></label>
+        <div class="field-row">
+          <label class="field"><span>账单日</span><input id="cardBillDayInput" type="number" min="1" max="31" step="1" placeholder="如：12" /></label>
+          <label class="field"><span>还款日</span><input id="cardDueDayInput" type="number" min="1" max="31" step="1" placeholder="如：2" /></label>
+        </div>
+        <label class="field">
+          <span>年费政策</span>
+          <textarea id="cardAnnualFeeInput" rows="2" placeholder="如：刷 6 次免年费 / 刚性年费 3600 元"></textarea>
+        </label>
+        <div class="field-row annual-fee-fields">
+          <label class="field">
+            <span>年费任务类型</span>
+            <select id="cardAnnualFeeTypeInput">
+              <option value="none">仅文字说明</option>
+              <option value="count">刷卡次数达标</option>
+              <option value="spend">消费金额达标</option>
+              <option value="points">积分兑换年费</option>
+              <option value="rigid">刚性年费</option>
+              <option value="free">免年费</option>
+            </select>
+          </label>
+          <label class="field"><span>年度目标</span><input id="cardAnnualFeeTargetInput" type="number" min="0" step="1" placeholder="次数、金额或积分" /></label>
+        </div>
+        <div class="card-form-actions">
+          <button class="btn-primary" type="submit"><span id="cardSubmitLabel">保存卡片</span></button>
+          <button class="btn-ghost" type="button" id="cardCancelButton">取消</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 卡汇总 左侧抽屉 -->
+    <div id="cardSummaryPanel" class="drawer-overlay card-summary-overlay" hidden>
+      <div class="card-summary-panel" role="dialog" aria-modal="true" aria-labelledby="cardSummaryTitle">
+        <div class="card-summary-head">
+          <div>
+            <span id="cardSummaryCount">0 张卡</span>
+            <h3 id="cardSummaryTitle">卡汇总</h3>
+          </div>
+          <div class="card-summary-actions">
+            <strong id="cardSummaryTotal">总额度 ¥0</strong>
+            <button id="closeCardSummaryButton" class="btn-ghost" type="button">关闭</button>
+          </div>
+        </div>
+        <div class="card-summary-table-wrap">
+          <table class="card-summary-table">
+            <thead>
+              <tr>
+                <th>卡片</th>
+                <th class="num">总额度</th>
+                <th>账单日</th>
+                <th>还款日</th>
+                <th>年费政策</th>
+              </tr>
+            </thead>
+            <tbody id="cardSummaryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 积分账户增/改抽屉 -->
+    <div id="loyaltyFormOverlay" class="drawer-overlay loyalty-form-overlay" hidden>
+      <form id="loyaltyForm" class="card-form loyalty-form" action="javascript:void(0)" autocomplete="off">
+        <div class="drawer-head">
+          <div><span>Points Wallet</span><h3 id="loyaltyFormTitle">添加积分账户</h3></div>
+          <button id="loyaltyDrawerCloseButton" class="btn-ghost" type="button">关闭</button>
+        </div>
+        <label class="field"><span>积分项目</span><input id="loyaltyProgramInput" type="text" list="loyaltyProgramPresets" placeholder="如：国航里程" required /><datalist id="loyaltyProgramPresets"><option value="国航里程"></option><option value="东航里程"></option><option value="南航里程"></option><option value="万豪积分"></option><option value="希尔顿积分"></option></datalist></label>
+        <label class="field"><span>积分数量</span><input id="loyaltyBalanceInput" type="number" min="0" step="1" placeholder="0" required /></label>
+        <label class="field"><span>会员账号</span><input id="loyaltyAccountInput" type="text" placeholder="会员号、手机号或邮箱" /></label>
+        <div class="loyalty-expiry-row">
+          <label class="field loyalty-expiry-date"><span>最近到期日</span><input id="loyaltyExpiryInput" type="date" /></label>
+          <label class="rolling-toggle"><input id="loyaltyRollingInput" type="checkbox" /><span class="rolling-toggle-track" aria-hidden="true"><i></i></span><span class="rolling-toggle-copy"><strong>滚动有效</strong><small>有活动时有效期顺延</small></span></label>
+        </div>
+        <label class="field loyalty-reminder-field">
+          <span>到期前提醒</span>
+          <div class="loyalty-reminder-input"><input id="loyaltyReminderDaysInput" type="number" min="1" max="3650" step="1" placeholder="如：90" /><small>天前推送到待办，留空表示不提醒</small></div>
+        </label>
+        <label class="field"><span>备注</span><textarea id="loyaltyNoteInput" rows="2" placeholder="等级、兑换计划、到期积分等"></textarea></label>
+        <div class="card-form-actions">
+          <button class="btn-primary" type="submit"><span id="loyaltySubmitLabel">保存账户</span></button>
+          <button id="loyaltyCancelButton" class="btn-ghost" type="button">取消</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 待办提醒 右侧抽屉 -->
+    <div id="reminderOverlay" class="drawer-overlay right-drawer-overlay" hidden>
+      <aside class="utility-drawer reminder-drawer" role="dialog" aria-modal="true" aria-labelledby="reminderTitle">
+        <div class="drawer-head">
+          <div><span>Action Center</span><h3 id="reminderTitle">待办提醒</h3></div>
+          <div class="drawer-head-actions">
+            <button id="markAllRemindersReadButton" class="btn-ghost" type="button">全部已读</button>
+            <button id="closeReminderButton" class="btn-ghost" type="button">关闭</button>
+          </div>
+        </div>
+        <div class="reminder-overview"><strong id="reminderCountText">0 项待办</strong><span>账单、还款、临额、积分和年费任务</span></div>
+        <div id="reminderList" class="reminder-list"></div>
+      </aside>
+    </div>
+
+    <!-- 数据工具 右侧抽屉 -->
+    <div id="dataToolsOverlay" class="drawer-overlay right-drawer-overlay" hidden>
+      <aside class="utility-drawer data-tools-drawer" role="dialog" aria-modal="true" aria-labelledby="dataToolsTitle">
+        <div class="drawer-head">
+          <div><span>Data Tools</span><h3 id="dataToolsTitle">数据备份与恢复</h3></div>
+          <button id="closeDataToolsButton" class="btn-ghost" type="button">关闭</button>
+        </div>
+        <div class="data-tool-list">
+          <button id="exportBackupButton" class="data-tool-button" type="button"><strong>导出完整备份</strong><span>卡片、记录、积分账户和设置</span></button>
+          <button id="importBackupButton" class="data-tool-button" type="button"><strong>导入完整备份</strong><span>从 JSON 文件恢复并覆盖当前数据</span></button>
+          <input id="importBackupInput" type="file" accept="application/json,.json" hidden />
+        </div>
+        <div class="data-health">
+          <span><small>信用卡</small><strong id="backupCardCount">0</strong></span>
+          <span><small>月度账单</small><strong id="backupBillCount">0</strong></span>
+          <span><small>手续费记录</small><strong id="backupRecordCount">0</strong></span>
+          <span><small>积分账户</small><strong id="backupLoyaltyCount">0</strong></span>
+        </div>
+      </aside>
+    </div>
+
+    <!-- 账单周期 右侧抽屉 -->
+    <div id="statementOverlay" class="drawer-overlay right-drawer-overlay" hidden>
+      <aside class="utility-drawer statement-drawer" role="dialog" aria-modal="true" aria-labelledby="statementTitle">
+        <div class="drawer-head">
+          <div><span>Statement Cycle</span><h3 id="statementTitle">本期账单</h3></div>
+          <button id="closeStatementButton" class="btn-ghost" type="button">关闭</button>
+        </div>
+        <div id="statementContent"></div>
+      </aside>
+    </div>
+
+    <!-- 月度账单增/改抽屉 -->
+    <div id="billFormOverlay" class="drawer-overlay bill-form-overlay" hidden>
+      <form id="billForm" class="card-form bill-form" action="javascript:void(0)" autocomplete="off">
+        <div class="drawer-head">
+          <div>
+            <span>Billing Cycle</span>
+            <h3 id="billFormTitle">登记月度账单</h3>
+          </div>
+          <button id="billDrawerCloseButton" class="btn-ghost" type="button">关闭</button>
+        </div>
+        <div class="field-row">
+          <label class="field">
+            <span>信用卡</span>
+            <select id="billCardInput" required>
+              <option value="">选择信用卡</option>
+            </select>
+          </label>
+          <label class="field"><span>账单月份</span><input id="billMonthInput" type="month" required /></label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>账单金额 ¥</span><input id="billAmountInput" type="number" min="0" step="0.01" placeholder="银行实际出账金额" /></label>
+          <label class="field"><span>最低还款额 ¥</span><input id="billMinimumInput" type="number" min="0" step="0.01" placeholder="最低还款金额" /></label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>应还日期</span><input id="billDueDateInput" type="date" /></label>
+          <label class="field">
+            <span>还款方式</span>
+            <select id="billRepaymentMethodInput">
+              <option value="full">全额</option>
+              <option value="minimum">最低</option>
+              <option value="installment">分期</option>
+              <option value="partial">部分</option>
+            </select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>已还金额 ¥</span><input id="billPaidAmountInput" type="number" min="0" step="0.01" placeholder="支持部分还款" /></label>
+          <label class="field"><span>实际还款日</span><input id="billPaidDateInput" type="date" /></label>
+        </div>
+        <label class="field"><span>备注</span><textarea id="billNoteInput" rows="2" placeholder="优惠、延期、争议账单或分期说明"></textarea></label>
+        <div class="bill-form-status" aria-live="polite">
+          <span>当前状态</span>
+          <strong id="billLiveStatus">待出账</strong>
+        </div>
+        <div class="card-form-actions">
+          <button class="btn-primary" type="submit"><span id="billSubmitLabel">保存账单</span></button>
+          <button id="billCancelButton" class="btn-ghost" type="button">取消</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="page">
+      <!-- ── Masthead ─────────────────────────────── -->
+      <header class="masthead app-header reveal">
+        <div class="app-brand">
+          <h1>信用卡<span class="gradient-text">管理账本</span></h1>
+        </div>
+        <nav class="section-tabs side-tabs" aria-label="功能板块" role="tablist">
+          <button class="section-tab is-active" id="tab-cards" type="button" role="tab" aria-selected="true" aria-controls="view-cards" data-view-tab="cards" title="我的卡片额度">
+            <span class="tab-index">01</span><strong>我的卡片额度</strong><small>额度、账单与还款</small>
+          </button>
+          <button class="section-tab" id="tab-fees" type="button" role="tab" aria-selected="false" aria-controls="view-fees" data-view-tab="fees" title="手续费汇总">
+            <span class="tab-index">02</span><strong>手续费汇总</strong><small>新增与记录明细</small>
+          </button>
+          <button class="section-tab" id="tab-fee-dashboard" type="button" role="tab" aria-selected="false" aria-controls="view-fee-dashboard" data-view-tab="fee-dashboard" title="手续费看板">
+            <span class="tab-index">03</span><strong>手续费看板</strong><small>收益、费率与趋势</small>
+          </button>
+          <button class="section-tab" id="tab-points" type="button" role="tab" aria-selected="false" aria-controls="view-points" data-view-tab="points" title="积分看板">
+            <span class="tab-index">04</span><strong>积分看板</strong><small>里程、积分与账号</small>
+          </button>
+        </nav>
+      </header>
+
+      <div class="brand-tools side-tool-rail" aria-label="全局工具">
+        <button id="reminderButton" class="header-tool-button" type="button" aria-label="打开待办提醒" title="待办提醒"><span aria-hidden="true">!</span><em id="reminderBadge" hidden>0</em></button>
+        <button id="privacyToggle" class="header-tool-button" type="button" aria-label="隐藏敏感金额" title="隐私模式"><span aria-hidden="true">◉</span></button>
+        <button id="dataToolsButton" class="header-tool-button" type="button" aria-label="打开数据备份" title="数据备份"><span aria-hidden="true">⇅</span></button>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="切换到黑夜模式" title="切换到黑夜模式"><span aria-hidden="true">☾</span></button>
+      </div>
+
+      <main id="main">
+        <!-- ── Hero: net profit + graphic ─────────── -->
+        <section id="view-fee-dashboard" class="hero reveal view-section" data-view="fee-dashboard" role="tabpanel" aria-labelledby="tab-fee-dashboard" aria-label="手续费与净收益概览">
+          <div class="net-card">
+            <div class="net-label"><span>净收益</span><span>Net Profit</span></div>
+            <strong id="netProfit">¥0.00</strong>
+            <p class="net-hint" id="profitHint">暂无记录</p>
+          </div>
+
+          <div class="hero-graphic" aria-hidden="true">
+            <div class="ring"></div>
+            <div class="dot-grid"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="float-card a"><div class="fc-k">积分回报</div><div class="fc-v" id="heroRewardRate">0.00%</div></div>
+            <div class="float-card b"><div class="fc-k">手续费率</div><div class="fc-v" id="heroFeeRate">0.00%</div></div>
+            <div class="chip-accent"></div>
+          </div>
+        </section>
+
+        <!-- ── 积分账户 ───────────────────────────── -->
+        <section id="view-points" class="loyalty-panel reveal view-section" data-view="points" role="tabpanel" aria-labelledby="tab-points">
+          <div class="loyalty-head">
+            <div class="unified-section-heading">
+              <div class="badge"><span class="dot"></span><span>Points Wallet</span></div>
+              <h2 class="section-title">我的积分账户</h2>
+              <p class="section-description">管理航空里程、酒店积分和会员账号</p>
+            </div>
+            <button id="addLoyaltyButton" class="btn-outline" type="button">＋ 添加积分账户</button>
+          </div>
+          <div class="loyalty-overview">
+            <span><small>积分账户</small><strong id="loyaltyAccountCount">0</strong></span>
+            <span><small>积分合计</small><strong id="loyaltyBalanceTotal">0</strong></span>
+          </div>
+          <div id="loyaltyList" class="loyalty-list"></div>
+          <div id="loyaltyEmpty" class="loyalty-empty">
+            <span class="loyalty-empty-icon" aria-hidden="true">＋</span>
+            <div><strong>还没有积分账户</strong><span>添加国航、东航、南航、万豪或希尔顿等积分账户。</span></div>
+          </div>
+        </section>
+
+        <!-- ── Dashboard 看板 ─────────────────────── -->
+        <section id="view-cards" class="dashboard reveal view-section" data-view="cards" role="tabpanel" aria-labelledby="tab-cards" aria-label="消费与额度看板">
+          <div class="section-head compact">
+            <div class="section-heading-copy unified-section-heading">
+              <div class="badge"><span class="dot"></span><span>Dashboard</span></div>
+              <h2 class="section-title">消费看板</h2>
+            </div>
+            <div class="period-filters" aria-label="消费看板周期筛选">
+              <label><span>年份</span><select id="dashboardYearFilter" aria-label="消费看板年份"></select></label>
+              <label><span>月份</span><select id="dashboardMonthFilter" aria-label="消费看板月份"></select></label>
+            </div>
+          </div>
+          <div class="kpi-grid">
+            <article class="kpi spend-kpi">
+              <span class="kpi-label">年度消费 <em id="yearLabel">2026</em></span>
+              <strong id="yearSpend" class="kpi-big">¥0.00</strong>
+              <div class="limit-breakdown spend-breakdown">
+                <span><small>账单消费</small><em id="yearBill">¥0.00</em></span>
+                <span><small>套现金额</small><em id="yearCashout">¥0.00</em></span>
+              </div>
+            </article>
+            <article class="kpi spend-kpi">
+              <span class="kpi-label">月度消费 <em id="monthLabel">2026-07</em></span>
+              <strong id="monthSpend" class="kpi-big">¥0.00</strong>
+              <div class="limit-breakdown spend-breakdown">
+                <span><small>账单消费</small><em id="monthBill">¥0.00</em></span>
+                <span><small>套现金额</small><em id="monthCashout">¥0.00</em></span>
+              </div>
+            </article>
+            <article class="kpi accent limit-kpi">
+              <span class="kpi-label">总授信额度</span>
+              <strong id="totalLimit" class="kpi-big">¥0.00</strong>
+              <div class="limit-breakdown">
+                <span><small>固定额度</small><em id="fixedLimitSum">¥0</em></span>
+                <span><small>临时总额</small><em id="tempLimitSum">¥0</em></span>
+              </div>
+            </article>
+            <article class="kpi">
+              <span class="kpi-label">临额到期提醒</span>
+              <strong id="expiryHead" class="kpi-big">—</strong>
+              <div class="limit-breakdown expiry-breakdown">
+                <span><small>到期信息</small><em id="expiryInfo">暂无临时额度</em></span>
+              </div>
+            </article>
+          </div>
+          <div class="repayment-strip" aria-label="本月还款概览">
+            <span><small>本月待还总额</small><strong id="repaymentDueTotal">¥0.00</strong></span>
+            <span><small>已还金额</small><strong id="repaymentPaidTotal">¥0.00</strong></span>
+            <span><small>剩余待还金额</small><strong id="repaymentRemainingTotal">¥0.00</strong></span>
+          </div>
+        </section>
+
+        <!-- ── Inverted stats 汇总 ────────────────── -->
+        <section class="stats reveal view-section" data-view="fee-dashboard" aria-label="手续费看板汇总">
+          <div class="stats-head">
+            <div class="section-heading-copy unified-section-heading">
+              <div class="badge on-dark"><span class="dot"></span><span>Ledger Summary</span></div>
+              <h2 class="section-title" id="ledgerSummaryTitle">手续费汇总</h2>
+              <p class="section-description"><span id="periodChip">全部周期</span></p>
+            </div>
+            <div class="period-filters stats-filters" aria-label="手续费看板周期筛选">
+              <label><span>年份</span><select id="summaryYearFilter" aria-label="手续费看板年份"></select></label>
+              <label><span>月份</span><select id="summaryMonthFilter" aria-label="手续费看板月份"></select></label>
+            </div>
+          </div>
+          <div class="stats-grid">
+            <div class="stat" data-metric-view="fees"><span class="stat-label">总手续费</span><span class="stat-value" id="totalFee">¥0.00</span></div>
+            <div class="stat"><span class="stat-label">积分总价值</span><span class="stat-value" id="totalPointValue">¥0.00</span></div>
+            <div class="stat" data-metric-view="fees"><span class="stat-label">套现总额</span><span class="stat-value" id="totalCashout">¥0.00</span></div>
+            <div class="stat" data-metric-view="fees"><span class="stat-label">账单总额</span><span class="stat-value" id="totalMonthlyBill">¥0.00</span></div>
+            <div class="stat" data-metric-view="fees"><span class="stat-label">平均手续费率</span><span class="stat-value" id="avgFeeRate">0.00%</span></div>
+            <div class="stat"><span class="stat-label">平均积分回报率</span><span class="stat-value" id="avgRewardRate">0.00%</span></div>
+          </div>
+        </section>
+
+        <!-- ── 手续费分析图表 ───────────────────── -->
+        <section class="analytics-panel reveal view-section" data-view="fee-dashboard" aria-labelledby="analyticsTitle">
+          <div class="section-head compact">
+            <div class="section-heading-copy unified-section-heading">
+              <div class="badge"><span class="dot"></span><span>Analytics</span></div>
+              <h2 class="section-title" id="analyticsTitle">趋势分析</h2>
+            </div>
+          </div>
+          <div class="analytics-grid">
+            <div class="analytics-chart-block">
+              <div class="analytics-chart-head"><strong>月度净收益</strong><span>积分价值减手续费</span></div>
+              <div class="trend-chart analytics-trend-chart" id="trendChart" aria-label="月度净收益趋势"></div>
+              <div id="trendEmpty" class="chart-empty">至少需要两个月的记录</div>
+            </div>
+            <div class="analytics-chart-block">
+              <div class="analytics-chart-head"><strong>卡片手续费对比</strong><span>按信用卡汇总</span></div>
+              <div id="cardFeeChart" class="card-fee-chart"></div>
+              <div id="cardFeeEmpty" class="chart-empty">还没有可比较的手续费记录</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Workspace ──────────────────────────── -->
+        <div class="workspace">
+          <div class="left-col">
+            <!-- 我的卡片额度 -->
+            <section class="card cards-panel reveal view-section" data-view="cards" aria-labelledby="cardsTitle">
+              <div class="section-head">
+                <div class="section-heading-copy unified-section-heading">
+                  <div class="badge"><span class="dot"></span><span>My Cards</span></div>
+                  <h2 class="section-title" id="cardsTitle">我的卡片额度</h2>
+                  <p class="section-description">集中管理额度、账单周期和年费政策</p>
+                </div>
+                <div class="card-panel-actions">
+                  <button id="addBillButton" class="btn-outline" type="button">登记账单</button>
+                  <button id="toggleCardSummaryButton" class="btn-outline" type="button" aria-expanded="false">卡汇总</button>
+                  <button id="addCardButton" class="btn-primary card-add-button" type="button" onclick="window.openCardDrawer?.(event)">＋ 添加卡片</button>
+                </div>
+              </div>
+
+              <div id="cardsList" class="cards-list"></div>
+              <div id="cardsEmpty" class="cards-empty">
+                <span class="cards-empty-icon" aria-hidden="true">＋</span>
+                <div><strong>还没有卡片</strong><span>添加第一张卡片，开始管理额度、账单日、还款日和年费政策。</span></div>
+              </div>
+              <div class="billing-ledger">
+                <div class="billing-ledger-head">
+                  <div>
+                    <strong>月度账单与还款</strong>
+                    <span id="billLedgerPeriod">当前月份</span>
+                  </div>
+                  <button id="addBillInlineButton" class="btn-outline" type="button">＋ 登记账单</button>
+                </div>
+                <div id="billsList" class="bills-list"></div>
+                <div id="billsEmpty" class="bills-empty">
+                  <span class="cards-empty-icon" aria-hidden="true">￥</span>
+                  <div><strong>还没有月度账单</strong><span>为每张卡每个月登记一条银行实际账单，才能追踪待还、已还和逾期。</span></div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 新增一笔：左侧抽屉 -->
+            <div id="entryFormOverlay" class="drawer-overlay entry-form-overlay" hidden>
+            <form id="entryForm" class="entry entry-drawer" autocomplete="off" role="dialog" aria-modal="true" aria-labelledby="entryFormTitle">
+              <div class="section-head drawer-head entry-drawer-head">
+                <div>
+                  <div class="badge"><span class="dot"></span><span>New Record</span></div>
+                  <h2 class="section-title" id="entryFormTitle">新增一笔</h2>
+                </div>
+                <div class="entry-head-actions">
+                  <button id="resetFormButton" class="btn-ghost" type="button" title="清空表单">清空</button>
+                  <button id="entryDrawerCloseButton" class="entry-toggle-button" type="button" aria-label="关闭新增记录表单" title="关闭新增记录表单"><span aria-hidden="true">×</span></button>
+                </div>
+              </div>
+
+              <div class="field-row entry-row-primary">
+                <label class="field">
+                  <span>日期 <em class="required-mark" aria-hidden="true">*</em></span>
+                  <input id="dateInput" name="date" type="date" required />
+                </label>
+                <label class="field">
+                  <span>信用卡 <em class="required-mark" aria-hidden="true">*</em></span>
+                  <select id="cardInput" name="card" required>
+                    <option value="">选择已添加的信用卡</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="field-row entry-row-channel">
+                <label class="field">
+                  <span>消费形式 <em class="required-mark" aria-hidden="true">*</em></span>
+                  <select id="methodInput" name="method" required>
+                    <option value="">选择消费形式</option>
+                    <option value="微信">微信</option>
+                    <option value="支付宝">支付宝</option>
+                    <option value="刷卡">刷卡</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span>渠道 / POS <em class="required-mark" aria-hidden="true">*</em></span>
+                  <input id="channelInput" name="channel" type="text" placeholder="输入渠道或 POS" list="channelPresets" required />
+                  <datalist id="channelPresets"></datalist>
+                </label>
+              </div>
+
+              <div class="field-row">
+                <label class="field">
+                  <span>套现金额 ¥ <em class="required-mark" aria-hidden="true">*</em></span>
+                  <input id="cashoutInput" name="cashout" type="number" min="0" step="0.01" placeholder="0.00" required />
+                </label>
+                <label class="field">
+                  <span>手续费率 % <em class="required-mark" aria-hidden="true">*</em></span>
+                  <input id="feeRateInput" name="feeRate" type="number" min="0" max="100" step="0.01" placeholder="0.60" required />
+                </label>
+              </div>
+
+              <div class="rate-presets" role="group" aria-label="常用费率">
+                <button class="rate-chip" type="button" data-rate="0.5">0.5%</button>
+                <button class="rate-chip" type="button" data-rate="0.6">0.6%</button>
+                <button class="rate-chip" type="button" data-rate="0.7">0.7%</button>
+                <button class="rate-chip" type="button" data-rate="0.8">0.8%</button>
+                <button class="rate-chip" type="button" data-rate="1.0">1.0%</button>
+              </div>
+              <div class="rate-history" id="rateHistory" hidden>
+                <span class="rate-history-label">历史费率</span>
+                <div class="rate-history-chips" id="rateHistoryChips"></div>
+              </div>
+
+              <label class="field">
+                <span>手续费金额 ¥ <em class="required-mark" aria-hidden="true">*</em><small class="field-hint">自动计算，可手动修改</small></span>
+                <input id="feeInput" name="fee" type="number" min="0" step="0.01" placeholder="0.00" required />
+              </label>
+
+              <p class="entry-optional-note"><span>选填信息</span> 积分与备注</p>
+              <div class="field-row">
+                <label class="field">
+                  <span>积分数量</span>
+                  <input id="pointsInput" name="points" type="number" min="0" step="1" placeholder="0" />
+                </label>
+                <label class="field">
+                  <span>积分价值 ¥</span>
+                  <input id="pointValueInput" name="pointValue" type="number" min="0" step="0.01" placeholder="0.00" />
+                </label>
+              </div>
+
+              <label class="field">
+                <span>备注</span>
+                <textarea id="noteInput" name="note" rows="2" placeholder="活动规则、兑换方式、账单周期……"></textarea>
+              </label>
+
+              <div class="live-card" aria-live="polite">
+                <div class="live-main">
+                  <span>本次净收益</span>
+                  <strong id="liveNet">¥0.00</strong>
+                </div>
+                <div class="live-stats">
+                  <span class="live-stat"><em id="liveFeeRate">0.00%</em>费率</span>
+                  <span class="live-dot">·</span>
+                  <span class="live-stat"><em id="liveRewardRate">0.00%</em>积分回报</span>
+                </div>
+              </div>
+
+              <button class="btn-primary" type="submit">
+                <span id="submitLabel">保存记录</span>
+                <span class="arrow" aria-hidden="true">→</span>
+              </button>
+              <button class="btn-ghost btn-cancel" type="button" id="cancelEditButton" hidden>取消编辑</button>
+            </form>
+            </div>
+          </div>
+
+          <!-- Records -->
+          <section id="view-fees" class="card records reveal view-section" data-view="fees" role="tabpanel" aria-labelledby="tab-fees recordsTitle">
+            <div class="section-head">
+              <div>
+                <div class="badge"><span class="dot"></span><span>Records</span></div>
+                <h2 class="section-title" id="recordsTitle">记录明细</h2>
+              </div>
+              <div class="toolbar">
+                <button id="openEntryButton" class="btn-primary records-add-button" type="button"><span aria-hidden="true">＋</span><span>新增一笔</span></button>
+                <label class="select-field">
+                  <span>月份</span>
+                  <select id="monthFilter"></select>
+                </label>
+                <button id="toggleAdvancedFiltersButton" class="btn-outline" type="button" aria-expanded="false">筛选</button>
+                <button id="exportButton" class="btn-outline" type="button">导出 CSV</button>
+                <button id="clearAllButton" class="btn-outline danger" type="button">删除全部</button>
+              </div>
+            </div>
+
+            <div id="advancedFilters" class="advanced-filters" hidden>
+              <label><span>搜索</span><input id="recordSearchInput" type="search" placeholder="卡片、尾号、渠道或备注" /></label>
+              <label><span>信用卡</span><select id="recordCardFilter"><option value="all">全部卡片</option></select></label>
+              <label><span>消费形式</span><select id="recordMethodFilter"><option value="all">全部形式</option><option value="微信">微信</option><option value="支付宝">支付宝</option><option value="刷卡">刷卡</option><option value="未填写">未填写</option></select></label>
+              <label><span>收益状态</span><select id="recordNetFilter"><option value="all">全部</option><option value="gain">正收益</option><option value="loss">负收益</option><option value="zero">零收益</option></select></label>
+              <label><span>开始日期</span><input id="recordStartDateFilter" type="date" /></label>
+              <label><span>结束日期</span><input id="recordEndDateFilter" type="date" /></label>
+              <label><span>最低金额</span><input id="recordMinAmountFilter" type="number" min="0" step="0.01" placeholder="0.00" /></label>
+              <label><span>最高金额</span><input id="recordMaxAmountFilter" type="number" min="0" step="0.01" placeholder="不限" /></label>
+              <button id="resetAdvancedFiltersButton" class="btn-ghost" type="button">重置筛选</button>
+            </div>
+
+            <div id="recordSummaryStrip" class="record-summary-strip" aria-label="筛选记录汇总">
+              <span><small>筛选记录</small><strong id="filteredRecordCount">0 笔</strong></span>
+              <span><small>套现总额</small><strong id="filteredSpendTotal">¥0.00</strong></span>
+              <span><small>手续费</small><strong id="filteredFeeTotal">¥0.00</strong></span>
+              <span><small>净收益</small><strong id="filteredNetTotal">¥0.00</strong></span>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-sort="date" class="sortable" tabindex="0">日期</th>
+                    <th>信用卡</th>
+                    <th>消费形式</th>
+                    <th>渠道</th>
+                    <th data-sort="cashout" class="sortable num" tabindex="0">套现金额</th>
+                    <th data-sort="fee" class="sortable num" tabindex="0">手续费</th>
+                    <th class="num">费率</th>
+                    <th data-sort="pointValue" class="sortable num" tabindex="0">积分价值</th>
+                    <th data-sort="net" class="sortable num" tabindex="0">净收益</th>
+                    <th>账单月份</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="recordsBody"></tbody>
+              </table>
+              <div id="emptyState" class="empty-state">
+                <span class="empty-icon" aria-hidden="true">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>
+                </span>
+                <strong>还没有记录</strong>
+                <span>点击“新增一笔”录入数据，这里会即时列出每笔的净收益、费率与月度统计。</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer class="app-footer">数据仅保存在本机浏览器 · 可通过标题栏数据工具导出完整 JSON 备份</footer>
+    </div>
+
+    <script src="./app.js?v=64"></script>
+  </body>
+</html>
