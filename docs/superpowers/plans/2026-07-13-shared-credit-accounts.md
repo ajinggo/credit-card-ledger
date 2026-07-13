@@ -58,4 +58,4 @@
 - [x] Run model, toast, syntax, and whitespace checks.
 - [x] Verify two cards sharing one account in the real browser at desktop and mobile sizes.
 - [x] Confirm two card bills sum into one pool usage and the dashboard counts the limit once.
-- [ ] Commit, merge to `main`, push GitHub, deploy Vercel, and verify production assets.
+- [x] Commit, merge to `main`, push GitHub, deploy Vercel, and verify production assets.
