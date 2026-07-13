@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#fdfcf8" />
     <title>信用卡管理账本 · Organic Glass</title>
-    <link rel="stylesheet" href="./styles.css?v=70" />
-    <link rel="stylesheet" href="./organic-liquid.css?v=70" />
+    <script src="./supabase-config.js?v=1"></script>
+    <script>
+      if (window.SUPABASE_CONFIG?.url && window.SUPABASE_CONFIG?.publishableKey) {
+        document.documentElement.classList.add("cloud-configured", "cloud-auth-locked");
+      }
+    </script>
+    <link rel="stylesheet" href="./styles.css?v=71" />
+    <link rel="stylesheet" href="./organic-liquid.css?v=71" />
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -14,6 +20,32 @@
 
     <!-- Toast -->
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div id="authOverlay" class="auth-overlay" hidden>
+      <section class="auth-panel" aria-labelledby="authTitle">
+        <div class="auth-brand"><span>Cloud Ledger</span><strong>信用卡管理账本</strong></div>
+        <form id="authForm" class="auth-form" autocomplete="on">
+          <h2 id="authTitle">登录云端账本</h2>
+          <label><span>邮箱</span><input id="authEmail" type="email" autocomplete="email" required /></label>
+          <label><span>密码</span><input id="authPassword" type="password" autocomplete="current-password" minlength="8" required /></label>
+          <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
+          <button class="btn-primary" type="submit"><span id="authSubmitLabel">登录</span></button>
+          <button id="authModeButton" class="btn-ghost auth-mode-button" type="button">没有账号，创建一个</button>
+        </form>
+      </section>
+    </div>
+
+    <div id="cloudMigrationOverlay" class="modal-backdrop cloud-migration-overlay" hidden>
+      <div class="modal-box cloud-migration-box" role="dialog" aria-modal="true" aria-labelledby="cloudMigrationTitle">
+        <span class="modal-kicker">First Sync</span>
+        <h3 id="cloudMigrationTitle">选择首次同步的数据</h3>
+        <p>这台设备和云端都有账本数据。请选择保留哪一份，本操作不会自动合并两份记录。</p>
+        <div class="cloud-migration-actions">
+          <button id="useCloudDataButton" class="btn-outline" type="button">使用云端数据</button>
+          <button id="useLocalDataButton" class="btn-primary" type="button">上传本机数据</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Confirm modal -->
     <div id="confirmModal" class="modal-backdrop" hidden>
@@ -178,6 +210,25 @@
       </aside>
     </div>
 
+    <div id="accountOverlay" class="drawer-overlay right-drawer-overlay" hidden>
+      <aside class="utility-drawer account-drawer" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+        <div class="drawer-head">
+          <div><span>Cloud Account</span><h3 id="accountTitle">账号与同步</h3></div>
+          <button id="closeAccountButton" class="btn-ghost" type="button">关闭</button>
+        </div>
+        <div class="account-summary">
+          <span>当前账号</span>
+          <strong id="accountEmail">未登录</strong>
+          <small id="cloudSyncState" data-state="signed-out">未登录</small>
+        </div>
+        <div class="account-actions">
+          <button id="syncNowButton" type="button"><strong>立即同步</strong><span>读取其他设备的最新数据</span></button>
+          <button id="uploadLocalButton" type="button"><strong>上传本机数据</strong><span>用当前设备覆盖云端账本</span></button>
+          <button id="signOutButton" class="danger" type="button"><strong>退出登录</strong><span>保留本机缓存并结束云端会话</span></button>
+        </div>
+      </aside>
+    </div>
+
     <!-- 月度账单增/改抽屉 -->
     <div id="billFormOverlay" class="drawer-overlay bill-form-overlay" hidden>
       <form id="billForm" class="card-form bill-form" action="javascript:void(0)" autocomplete="off">
@@ -252,6 +303,7 @@
       </header>
 
       <div class="brand-tools side-tool-rail" aria-label="全局工具">
+        <button id="accountButton" class="header-tool-button account-button" type="button" aria-label="打开账号与同步" title="账号与同步" hidden><span aria-hidden="true">@</span></button>
         <button id="reminderButton" class="header-tool-button" type="button" aria-label="打开待办提醒" title="待办提醒"><span aria-hidden="true">!</span><em id="reminderBadge" hidden>0</em></button>
         <button id="privacyToggle" class="header-tool-button" type="button" aria-label="隐藏敏感金额" title="隐私模式"><span aria-hidden="true">◉</span></button>
         <button id="dataToolsButton" class="header-tool-button" type="button" aria-label="打开数据备份" title="数据备份"><span aria-hidden="true">⇅</span></button>
@@ -615,6 +667,8 @@
       <footer class="app-footer">数据仅保存在本机浏览器 · 可通过标题栏数据工具导出完整 JSON 备份</footer>
     </div>
 
-    <script src="./app.js?v=64"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2/dist/umd/supabase.js" integrity="sha384-yifgV8iFWyp5cgu+V1G1rtlEHpEErPlL5fTrkUELIsWq0CIVDON2WP/NlXVJT3vO" crossorigin="anonymous"></script>
+    <script src="./app.js?v=65"></script>
+    <script src="./cloud-sync.js?v=1"></script>
   </body>
 </html>

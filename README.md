@@ -4,7 +4,7 @@
 
 **在线体验：[https://credit-card-ledger.vercel.app](https://credit-card-ledger.vercel.app)**
 
-> 当前版本的数据仅保存在访问者自己的浏览器中，不会上传到服务器。首次从本地版本迁移到在线版本时，请通过“数据备份与恢复”导出并导入 JSON 备份。
+> 当前版本已启用 Supabase 邮箱登录与云同步。首次登录时可将原有本机账本上传到云端；JSON 导出与导入仍作为独立备份方式保留。
 
 ## 核心功能
 
@@ -18,6 +18,8 @@
 - 积分账户：积分余额、到期时间、滚动有效期和提醒设置。
 - 待办中心：账单日、还款日、临额、积分和年费任务提醒。
 - 数据备份：完整 JSON 导出与导入。
+- 云端账号：邮箱注册、登录、退出和会话恢复。
+- 多设备同步：登录后读取或上传完整账本快照。
 - 隐私模式、深色模式和响应式布局。
 
 ## 财务口径
@@ -54,13 +56,13 @@ open index.html
 如需通过本地 HTTP 服务运行：
 
 ```bash
-python3 -m http.server 8765
+python3 -m http.server 8768
 ```
 
 然后访问：
 
 ```text
-http://127.0.0.1:8765/
+http://127.0.0.1:8768/
 ```
 
 ## 数据与隐私
@@ -80,6 +82,10 @@ http://127.0.0.1:8765/
 ├── app.js              # 数据、计算和交互逻辑
 ├── styles.css          # 基础样式
 ├── organic-liquid.css  # 当前视觉系统与响应式样式
+├── cloud-sync.js       # Supabase 登录与云同步
+├── supabase-config.js  # Supabase 公开客户端配置
+├── supabase/
+│   └── schema.sql      # 数据表、显式授权和 RLS 策略
 ├── .gitignore
 └── .vercelignore
 ```
@@ -92,8 +98,22 @@ http://127.0.0.1:8765/
 - Browser Local Storage
 - GitHub
 - Vercel
+- Supabase Auth
+- Supabase PostgreSQL + RLS
 
-项目目前不需要 Node.js 构建流程，也没有引入 React、Vue 或其他前端框架。
+项目目前不需要 Node.js 构建流程，也没有引入 React、Vue 或其他前端框架。Supabase 客户端固定使用 `@supabase/supabase-js@2.110.2`。
+
+## Supabase 配置
+
+生产项目已经完成以下配置；部署到其他 Supabase 项目时需要重新执行：
+
+1. 在 Supabase 创建项目，并启用 Email/Password 登录。
+2. 在 SQL Editor 执行 `supabase/schema.sql`。
+3. 在 Authentication URL Configuration 中加入生产地址和本地开发地址。
+4. 将 Project URL 和 Publishable Key 填入 `supabase-config.js`。
+5. 不要在前端写入 `service_role`、secret key 或数据库密码。
+
+`ledger_state` 表为每个用户保存一份 JSONB 账本快照。表已启用 RLS，并通过 `auth.uid() = user_id` 限制用户只能访问自己的数据；`anon` 无表权限，`authenticated` 仅获得必要的增删改查权限。
 
 ## 开发与发布
 
@@ -125,10 +145,9 @@ https://credit-card-ledger.vercel.app
 
 ## 后续计划
 
-- 接入 Supabase Auth，实现账号注册、登录和会话管理。
-- 使用 Supabase PostgreSQL 保存卡片、账单、还款和积分数据。
-- 为所有业务表启用 RLS，确保用户只能访问自己的数据。
-- 支持多设备同步、云端备份和离线状态。
+- 增加忘记密码、修改密码和登录设备管理。
+- 将 JSONB 快照逐步拆分为卡片、账单、还款和积分流水表。
+- 增加同步冲突提示和更细粒度的离线合并策略。
 - 增加独立还款流水，让一张账单支持多次还款。
 - 增加积分获得、兑换、过期和调整流水。
 
