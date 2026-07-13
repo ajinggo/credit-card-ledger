@@ -38,8 +38,8 @@
 
   const emptySnapshot = () => ({
     format: "credit-card-ledger-cloud",
-    version: 2,
-    data: { cards: [], bills: [], records: [], loyaltyAccounts: [], recentRates: [] },
+    version: 3,
+    data: { cards: [], creditAccounts: [], bills: [], records: [], loyaltyAccounts: [], recentRates: [] },
     settings: { theme: document.documentElement.dataset.theme || "light", privacy: false, view: "cards", reminderReadIds: [] },
   });
 
@@ -104,7 +104,7 @@
     const payload = {
       user_id: session.user.id,
       data: window.ledgerStateApi.exportSnapshot(),
-      schema_version: 2,
+      schema_version: 3,
       updated_at: updatedAt,
     };
     const { data, error } = await client

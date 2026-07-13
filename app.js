@@ -5,11 +5,13 @@
 
 const RECORDS_KEY = "pointsLedger_dark_v1";
 const CARDS_KEY = "pointsLedger_cards_v1";
+const CREDIT_ACCOUNTS_KEY = "pointsLedger_credit_accounts_v1";
 const BILLS_KEY = "pointsLedger_bills_v1";
 const LOYALTY_KEY = "pointsLedger_loyalty_v1";
 const RECENT_RATES_KEY = "pointsLedger_recent_rates_v1";
-const SCHEMA_KEY = "pointsLedger_schema_v2";
-window.__pointsLedgerBuild = "billing-repayment-v55";
+const SCHEMA_KEY = "pointsLedger_schema_v3";
+window.__pointsLedgerBuild = "shared-credit-accounts-v66";
+const CreditAccountModel = window.CreditAccountModel;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -125,6 +127,9 @@ const cardDrawerCloseButton = $("#cardDrawerCloseButton");
 const cardInputs = {
   name: $("#cardNameInput"),
   lastFour: $("#cardLastFourInput"),
+  creditAccountId: $("#cardCreditAccountInput"),
+  creditAccountName: $("#cardCreditAccountNameInput"),
+  creditAccountHint: $("#cardCreditAccountHint"),
   fixed: $("#cardFixedInput"),
   temp: $("#cardTempInput"),
   expiry: $("#cardExpiryInput"),
@@ -192,10 +197,12 @@ const loyaltyBalanceTotal = $("#loyaltyBalanceTotal");
 // ── 状态 ─────────────────────────────────────────
 let records = load(RECORDS_KEY);
 let cards = load(CARDS_KEY);
+let creditAccounts = load(CREDIT_ACCOUNTS_KEY);
 let bills = load(BILLS_KEY);
 let loyaltyAccounts = load(LOYALTY_KEY);
 let recentRates = load(RECENT_RATES_KEY);
 if (!Array.isArray(cards)) cards = [];
+if (!Array.isArray(creditAccounts)) creditAccounts = [];
 if (!Array.isArray(records)) records = [];
 if (!Array.isArray(bills)) bills = [];
 if (!Array.isArray(loyaltyAccounts)) loyaltyAccounts = [];
@@ -282,6 +289,7 @@ function load(key) {
 }
 function saveRecords() { localStorage.setItem(RECORDS_KEY, JSON.stringify(records)); window.ledgerCloud?.schedulePush(); }
 function saveCards() { localStorage.setItem(CARDS_KEY, JSON.stringify(cards)); window.ledgerCloud?.schedulePush(); }
+function saveCreditAccounts() { localStorage.setItem(CREDIT_ACCOUNTS_KEY, JSON.stringify(creditAccounts)); window.ledgerCloud?.schedulePush(); }
 function saveBills() { localStorage.setItem(BILLS_KEY, JSON.stringify(bills)); window.ledgerCloud?.schedulePush(); }
 function saveLoyaltyAccounts() { localStorage.setItem(LOYALTY_KEY, JSON.stringify(loyaltyAccounts)); window.ledgerCloud?.schedulePush(); }
 function saveRecentRates() { localStorage.setItem(RECENT_RATES_KEY, JSON.stringify(recentRates)); window.ledgerCloud?.schedulePush(); }
@@ -312,6 +320,18 @@ const methodLabel = (value) => ({ full: "全额", minimum: "最低", installment
 
 function cardById(id) {
   return cards.find((card) => card.id === id) || null;
+}
+
+function creditAccountById(id) {
+  return creditAccounts.find((account) => account.id === id) || null;
+}
+
+function creditAccountForCard(card) {
+  return creditAccountById(card?.creditAccountId);
+}
+
+function cardsForCreditAccount(accountId) {
+  return cards.filter((card) => card.creditAccountId === accountId);
 }
 
 function cardLabel(card) {
@@ -487,15 +507,27 @@ function buildReminders() {
     });
     if (billDate && billDays <= 7) items.push({ id: `bill:${card.id || card.name}:${toLocalISO(billDate)}`, type: "账单", tone: "info", days: billDays, title: cardLabel, detail: billDays === 0 ? "今天是账单日" : `${toLocalISO(billDate)} 账单日，剩余 ${billDays} 天` });
     if (dueDate && dueDays <= 7 && !hasOpenBillReminder) items.push({ id: `due:${card.id || card.name}:${toLocalISO(dueDate)}`, type: "还款", tone: dueDays <= 2 ? "urgent" : "warning", days: dueDays, title: cardLabel, detail: dueDays === 0 ? "今天是还款日" : `${toLocalISO(dueDate)} 还款，剩余 ${dueDays} 天` });
-    if (card.tempLimit && card.tempExpiry) {
-      const expiryDays = daysUntil(card.tempExpiry);
-      if (expiryDays <= 30) items.push({ id: `temp:${card.id || card.name}:${card.tempExpiry}`, type: "临额", tone: expiryDays < 0 ? "urgent" : "warning", days: expiryDays, title: cardLabel, detail: expiryDays < 0 ? `临额已过期 ${Math.abs(expiryDays)} 天` : `${card.tempExpiry} 到期，剩余 ${expiryDays} 天` });
-    }
     const annual = annualFeeProgress(card);
     if (annual.trackable && !annual.complete) {
       const remaining = Math.max(annual.target - annual.current, 0);
       items.push({ id: `annual:${card.id || card.name}:${yearKey(today())}:${annual.type}:${annual.target}`, type: "年费", tone: "task", days: 120, title: cardLabel, detail: `年度任务 ${annual.current.toLocaleString("zh-CN")} / ${annual.target.toLocaleString("zh-CN")} ${annual.unit}，还差 ${remaining.toLocaleString("zh-CN")} ${annual.unit}` });
     }
+  });
+  creditAccounts.forEach((account) => {
+    if (!account.tempLimit || !account.tempExpiry) return;
+    const expiryDays = daysUntil(account.tempExpiry);
+    if (expiryDays > 30) return;
+    const memberCount = creditAccountMemberCount(account.id);
+    items.push({
+      id: `temp-account:${account.id}:${account.tempExpiry}`,
+      type: "临额",
+      tone: expiryDays < 0 ? "urgent" : "warning",
+      days: expiryDays,
+      title: account.name || "未命名额度账户",
+      detail: expiryDays < 0
+        ? `临额已过期 ${Math.abs(expiryDays)} 天 · 关联 ${memberCount} 张卡`
+        : `${account.tempExpiry} 到期，剩余 ${expiryDays} 天 · 关联 ${memberCount} 张卡`,
+    });
   });
   bills.forEach((bill) => {
     const status = billStatus(bill);
@@ -675,9 +707,9 @@ function updateBackupCounts() {
 function exportFullBackup() {
   const backup = {
     format: "credit-card-ledger-backup",
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
-    data: { cards, bills, records, loyaltyAccounts, recentRates },
+    data: { cards, creditAccounts, bills, records, loyaltyAccounts, recentRates },
     settings: {
       theme: document.documentElement.dataset.theme || "light",
       privacy: privacyEnabled,
@@ -703,12 +735,13 @@ async function importFullBackup(file) {
     const confirmed = await askConfirm(`导入后会覆盖当前 ${cards.length} 张卡、${bills.length} 条账单、${records.length} 条手续费记录和 ${loyaltyAccounts.length} 个积分账户，确定继续吗？`, "确认导入");
     if (!confirmed) return;
     cards = backup.data.cards;
+    creditAccounts = Array.isArray(backup.data.creditAccounts) ? backup.data.creditAccounts : [];
     bills = Array.isArray(backup.data.bills) ? backup.data.bills : [];
     records = backup.data.records;
     loyaltyAccounts = backup.data.loyaltyAccounts;
     recentRates = Array.isArray(backup.data.recentRates) ? backup.data.recentRates : [];
     migrateDataModel();
-    saveCards(); saveBills(); saveRecords(); saveLoyaltyAccounts(); saveRecentRates();
+    saveCards(); saveCreditAccounts(); saveBills(); saveRecords(); saveLoyaltyAccounts(); saveRecentRates();
     if (backup.settings?.theme) applyTheme(backup.settings.theme);
     setPrivacy(Boolean(backup.settings?.privacy));
     reminderReadIds = new Set(Array.isArray(backup.settings?.reminderReadIds) ? backup.settings.reminderReadIds : []);
@@ -825,7 +858,9 @@ function renderRateHistory() {
    卡片额度管理
    ══════════════════════════════════════════════════ */
 // 银行的临时额度通常表示调整后的总额度，而不是固定额度之外的增量。
-const cardTotal = (c) => Math.max(Number(c.fixedLimit || 0), Number(c.tempLimit || 0));
+const cardTotal = (card) => CreditAccountModel.accountTotal(creditAccountForCard(card) || card);
+const creditAccountMemberCount = (accountId) => cardsForCreditAccount(accountId).length;
+const creditAccountTypeLabel = (account) => creditAccountMemberCount(account?.id) > 1 ? "共享额度" : "独立额度";
 cardInputs.lastFour.addEventListener("input", () => {
   cardInputs.lastFour.value = cardInputs.lastFour.value.replace(/\D/g, "").slice(0, 4);
 });
@@ -853,6 +888,16 @@ function migrateDataModel() {
     }
     return next;
   });
+
+  const accountMigration = CreditAccountModel.migrateCreditAccounts({
+    cards,
+    creditAccounts,
+    makeId,
+    now,
+  });
+  cards = accountMigration.cards;
+  creditAccounts = accountMigration.creditAccounts;
+  if (accountMigration.changed) changed = true;
 
   const findCardForRecord = (record) => {
     if (record.cardId) {
@@ -961,18 +1006,58 @@ function migrateDataModel() {
   if (migratedBills.length !== bills.length) changed = true;
   bills = migratedBills;
 
-  if (localStorage.getItem(SCHEMA_KEY) !== "2") {
-    localStorage.setItem(SCHEMA_KEY, "2");
+  if (localStorage.getItem(SCHEMA_KEY) !== "3") {
+    localStorage.setItem(SCHEMA_KEY, "3");
     changed = true;
   }
   if (changed) {
     saveCards();
+    saveCreditAccounts();
     saveRecords();
     saveBills();
   }
 }
 
 migrateDataModel();
+
+function renderCreditAccountOptions(preferred = "new") {
+  cardInputs.creditAccountId.innerHTML = '<option value="new">创建新的额度账户</option>';
+  creditAccounts
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name, "zh-CN"))
+    .forEach((account) => {
+      const option = document.createElement("option");
+      option.value = account.id;
+      const memberCount = creditAccountMemberCount(account.id);
+      option.textContent = `${account.name} · ${money0(CreditAccountModel.accountTotal(account))}${memberCount ? ` · ${memberCount} 张卡` : ""}`;
+      cardInputs.creditAccountId.append(option);
+    });
+  cardInputs.creditAccountId.value = creditAccounts.some((account) => account.id === preferred) ? preferred : "new";
+}
+
+function updateCreditAccountForm({ clearNew = false } = {}) {
+  const account = creditAccountById(cardInputs.creditAccountId.value);
+  if (account) {
+    cardInputs.creditAccountName.value = account.name || "";
+    cardInputs.fixed.value = account.fixedLimit || "";
+    cardInputs.temp.value = account.tempLimit || "";
+    cardInputs.expiry.value = account.tempExpiry || "";
+    const count = creditAccountMemberCount(account.id);
+    cardInputs.creditAccountHint.textContent = count > 1
+      ? `共享额度账户 · 当前关联 ${count} 张卡，修改额度会同步影响这些卡片。`
+      : "独立额度账户 · 可将其他卡片加入此账户以共享额度。";
+    return;
+  }
+  if (clearNew) {
+    cardInputs.creditAccountName.value = "";
+    cardInputs.fixed.value = "";
+    cardInputs.temp.value = "";
+    cardInputs.expiry.value = "";
+  }
+  cardInputs.creditAccountHint.textContent = "创建后可让同一银行的其他卡片加入这个额度账户。";
+}
+
+cardInputs.creditAccountId.addEventListener("change", () => updateCreditAccountForm({ clearNew: true }));
 
 function closeCardDrawer() {
   cardFormOverlay.hidden = true;
@@ -986,6 +1071,8 @@ function openCardDrawer(e) {
   cardForm.reset();
   cardFormTitle.textContent = "添加卡片";
   $("#cardSubmitLabel").textContent = "保存卡片";
+  renderCreditAccountOptions("new");
+  updateCreditAccountForm({ clearNew: true });
   cardInputs.annualFeeType.value = "none";
   updateAnnualFeeTargetState();
   cardSummaryOpen = false;
@@ -1036,12 +1123,28 @@ cardForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const name = cardInputs.name.value.trim();
   if (!name) return;
-  const payload = {
-    name,
-    lastFour: cardInputs.lastFour.value.trim(),
+  const now = new Date().toISOString();
+  const selectedAccount = creditAccountById(cardInputs.creditAccountId.value);
+  const accountPayload = {
+    name: cardInputs.creditAccountName.value.trim() || `${name}额度`,
     fixedLimit: Number(cardInputs.fixed.value || 0),
     tempLimit: Number(cardInputs.temp.value || 0),
     tempExpiry: cardInputs.expiry.value || "",
+    updatedAt: now,
+  };
+  let creditAccountId = selectedAccount?.id;
+  if (selectedAccount) {
+    creditAccounts = creditAccounts.map((account) => account.id === selectedAccount.id
+      ? { ...account, ...accountPayload }
+      : account);
+  } else {
+    creditAccountId = makeId();
+    creditAccounts = [{ id: creditAccountId, ...accountPayload, createdAt: now }, ...creditAccounts];
+  }
+  const payload = {
+    name,
+    lastFour: cardInputs.lastFour.value.trim(),
+    creditAccountId,
     billDay: dayValue(cardInputs.billDay.value),
     dueDay: dayValue(cardInputs.dueDay.value),
     annualFee: cardInputs.annualFee.value.trim(),
@@ -1050,13 +1153,21 @@ cardForm.addEventListener("submit", (e) => {
   };
   if (editingCardId) {
     const idx = cards.findIndex((c) => c.id === editingCardId);
-    if (idx !== -1) cards[idx] = { ...cards[idx], ...payload };
+    if (idx !== -1) {
+      const nextCard = { ...cards[idx], ...payload };
+      delete nextCard.fixedLimit;
+      delete nextCard.tempLimit;
+      delete nextCard.tempExpiry;
+      cards[idx] = nextCard;
+    }
     showToast("卡片已更新");
   } else {
-    cards = [{ id: makeId(), ...payload, createdAt: new Date().toISOString() }, ...cards];
+    cards = [{ id: makeId(), ...payload, createdAt: now }, ...cards];
     showToast("卡片已添加");
   }
+  creditAccounts = CreditAccountModel.removeOrphanAccounts(creditAccounts, cards);
   saveCards();
+  saveCreditAccounts();
   cardFormOverlay.hidden = true;
   editingCardId = null;
   render();
@@ -1068,9 +1179,8 @@ function editCard(id) {
   editingCardId = id;
   cardInputs.name.value = c.name;
   cardInputs.lastFour.value = c.lastFour || "";
-  cardInputs.fixed.value = c.fixedLimit || "";
-  cardInputs.temp.value = c.tempLimit || "";
-  cardInputs.expiry.value = c.tempExpiry || "";
+  renderCreditAccountOptions(c.creditAccountId);
+  updateCreditAccountForm();
   cardInputs.billDay.value = c.billDay || "";
   cardInputs.dueDay.value = c.dueDay || "";
   cardInputs.annualFee.value = c.annualFee || "";
@@ -1090,30 +1200,28 @@ async function deleteCard(id) {
   if (!c) return;
   if (!(await askConfirm(`确定删除卡片「${c.name}」吗？已有的套现记录不受影响。`))) return;
   cards = cards.filter((x) => x.id !== id);
+  creditAccounts = CreditAccountModel.removeOrphanAccounts(creditAccounts, cards);
   saveCards();
+  saveCreditAccounts();
   render();
   showToast("卡片已删除");
 }
 
-function expiryState(c) {
-  if (!c.tempLimit || !c.tempExpiry) return { cls: "none", text: "无临额" };
-  const d = daysUntil(c.tempExpiry);
+function expiryState(account) {
+  if (!account?.tempLimit || !account?.tempExpiry) return { cls: "none", text: "无临额" };
+  const d = daysUntil(account.tempExpiry);
   if (d < 0) return { cls: "expired", text: "已到期" };
   if (d <= 30) return { cls: "soon", text: `${d} 天后到期` };
-  return { cls: "ok", text: `${c.tempExpiry} 到期` };
+  return { cls: "ok", text: `${account.tempExpiry} 到期` };
 }
 
 function cardUsageForSelectedPeriod(card) {
   const selectedPeriod = selectedDashboardMonth();
-  const bill = getBillForCardMonth(card.id, selectedPeriod);
-  const used = Number(bill?.amount || 0);
-  const limit = cardTotal(card);
+  const account = creditAccountForCard(card);
+  const usage = CreditAccountModel.usageForAccount({ account, cards, bills, period: selectedPeriod });
   return {
     selectedPeriod,
-    used,
-    limit,
-    available: Math.max(limit - used, 0),
-    usageRate: limit > 0 ? Math.min((used / limit) * 100, 100) : 0,
+    ...usage,
   };
 }
 
@@ -1185,7 +1293,8 @@ function openStatement(cardId) {
 function renderCards() {
   cardsEmpty.hidden = cards.length > 0;
   cardsList.innerHTML = cards.map((c) => {
-    const st = expiryState(c);
+    const account = creditAccountForCard(c) || c;
+    const st = expiryState(account);
     const { selectedPeriod, used, available, usageRate } = cardUsageForSelectedPeriod(c);
     const annual = annualFeeProgress(c);
     const annualTask = annual.trackable ? `<div class="annual-task${annual.complete ? " complete" : ""}">
@@ -1203,9 +1312,9 @@ function renderCards() {
       </div>
       <div class="card-row-dashboard">
         <div class="card-limit-summary">
-          <span>总额度</span>
-          <strong class="card-row-total">${money0(cardTotal(c))}</strong>
-          <div><small>固额 ${money0(c.fixedLimit)}</small><small>临额总额${money0(c.tempLimit)}</small></div>
+          <span>${creditAccountTypeLabel(account)}</span>
+          <strong class="card-row-total">${money0(CreditAccountModel.accountTotal(account))}</strong>
+          <div><small>固额 ${money0(account.fixedLimit)}</small><small>临额总额${money0(account.tempLimit)}</small></div>
         </div>
         <div class="card-usage">
           <div class="card-usage-head">
@@ -1230,7 +1339,9 @@ function renderCards() {
   // 安全写入卡名（防 XSS）
   cardsList.querySelectorAll(".card-row").forEach((row, i) => {
     row.querySelector(".card-row-name").textContent = cards[i].name;
-    row.querySelector(".card-row-type").textContent = cards[i].lastFour ? `信用卡额度 · 尾号 ${cards[i].lastFour}` : "信用卡额度";
+    const account = creditAccountForCard(cards[i]);
+    const tail = cards[i].lastFour ? `尾号 ${cards[i].lastFour}` : "尾号未填写";
+    row.querySelector(".card-row-type").textContent = `${tail} · ${creditAccountTypeLabel(account)}：${account?.name || "未命名额度账户"}`;
     const policy = cards[i].annualFee || "";
     const policyEl = row.querySelector(".card-row-policy");
     policyEl.hidden = !policy;
@@ -1245,8 +1356,8 @@ function renderCardSummary() {
   cardSummaryPanel.hidden = !cardSummaryOpen;
   toggleCardSummaryButton.setAttribute("aria-expanded", String(cardSummaryOpen));
   toggleCardSummaryButton.textContent = "卡汇总";
-  cardSummaryCount.textContent = `${cards.length} 张卡`;
-  cardSummaryTotal.textContent = `总额度 ${money0(cards.reduce((total, c) => total + cardTotal(c), 0))}`;
+  cardSummaryCount.textContent = `${cards.length} 张卡 · ${creditAccounts.length} 个额度账户`;
+  cardSummaryTotal.textContent = `总额度 ${money0(CreditAccountModel.totalCredit(creditAccounts))}`;
   cardSummaryBody.innerHTML = "";
   if (cardSummaryOpen) closeCardSummaryButton.focus();
 
@@ -1258,15 +1369,16 @@ function renderCardSummary() {
   }
 
   cards.forEach((c) => {
+    const account = creditAccountForCard(c) || c;
     const row = document.createElement("tr");
     row.innerHTML = `
       <td><span class="summary-card-name"></span><span class="summary-card-limit"></span></td>
-      <td class="num">${money0(cardTotal(c))}</td>
+      <td class="num">${money0(CreditAccountModel.accountTotal(account))}</td>
       <td>${dayLabel(c.billDay)}</td>
       <td>${dayLabel(c.dueDay)}</td>
       <td><span class="summary-policy"></span></td>`;
     row.querySelector(".summary-card-name").textContent = `${c.name || "未命名卡片"}${c.lastFour ? ` · 尾号 ${c.lastFour}` : ""}`;
-    row.querySelector(".summary-card-limit").textContent = `固额 ${money0(c.fixedLimit)} · 临额总额${money0(c.tempLimit)}`;
+    row.querySelector(".summary-card-limit").textContent = `${creditAccountTypeLabel(account)}：${account.name || "未命名额度账户"} · 固额 ${money0(account.fixedLimit)} · 临额总额${money0(account.tempLimit)}`;
     row.querySelector(".summary-policy").textContent = c.annualFee || "未设置";
     cardSummaryBody.append(row);
   });
@@ -1669,29 +1781,29 @@ function renderDashboard() {
   out.repaymentRemainingTotal.textContent = money(monthRemainingTotal);
 
   // 额度总览
-  const fixedSum = sum(cards, "fixedLimit");
-  const tempSum = sum(cards, "tempLimit");
-  out.totalLimit.textContent = money0(cards.reduce((total, card) => total + cardTotal(card), 0));
+  const fixedSum = sum(creditAccounts, "fixedLimit");
+  const tempSum = sum(creditAccounts, "tempLimit");
+  out.totalLimit.textContent = money0(CreditAccountModel.totalCredit(creditAccounts));
   out.fixedLimitSum.textContent = money0(fixedSum);
   out.tempLimitSum.textContent = money0(tempSum);
 
-  // 临额到期提醒：取最近一张有临额且未过期/最紧急的卡
-  const withTemp = cards.filter((c) => c.tempLimit && c.tempExpiry);
+  // 临额到期提醒按额度账户去重，避免共享额度的多张卡重复提醒。
+  const withTemp = creditAccounts.filter((account) => account.tempLimit && account.tempExpiry);
   if (!withTemp.length) {
     out.expiryHead.textContent = "—";
     out.expiryInfo.textContent = "暂无临时额度";
   } else {
     const ranked = withTemp
-      .map((c) => ({ c, d: daysUntil(c.tempExpiry) }))
+      .map((account) => ({ account, d: daysUntil(account.tempExpiry) }))
       .sort((a, b) => a.d - b.d);
     const soonest = ranked[0];
     const expiredCount = ranked.filter((x) => x.d < 0).length;
     if (soonest.d < 0) {
       out.expiryHead.textContent = "已过期";
-      out.expiryInfo.textContent = `${soonest.c.name} 等 ${expiredCount} 张临额已过期`;
+      out.expiryInfo.textContent = `${soonest.account.name} 等 ${expiredCount} 个额度账户临额已过期`;
     } else {
       out.expiryHead.textContent = `${soonest.d} 天`;
-      out.expiryInfo.textContent = `${soonest.c.name} · ${soonest.c.tempExpiry} 到期`;
+      out.expiryInfo.textContent = `${soonest.account.name} · ${soonest.account.tempExpiry} 到期`;
     }
   }
 }
@@ -2024,9 +2136,10 @@ function render() {
 function exportLedgerSnapshot() {
   return {
     format: "credit-card-ledger-cloud",
-    version: 2,
+    version: 3,
     data: {
       cards,
+      creditAccounts,
       bills,
       records,
       loyaltyAccounts,
@@ -2047,6 +2160,7 @@ function applyLedgerSnapshot(snapshot) {
     throw new Error("云端账本格式无效");
   }
   cards = payload.cards;
+  creditAccounts = Array.isArray(payload.creditAccounts) ? payload.creditAccounts : [];
   bills = Array.isArray(payload.bills) ? payload.bills : [];
   records = payload.records;
   loyaltyAccounts = payload.loyaltyAccounts;
@@ -2054,6 +2168,7 @@ function applyLedgerSnapshot(snapshot) {
   reminderReadIds = new Set(Array.isArray(snapshot.settings?.reminderReadIds) ? snapshot.settings.reminderReadIds : []);
   migrateDataModel();
   saveCards();
+  saveCreditAccounts();
   saveBills();
   saveRecords();
   saveLoyaltyAccounts();

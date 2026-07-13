@@ -8178,3 +8178,22 @@ html[data-ui="organic-v41"][data-theme="dark"] .toast.error {
     font-size: 0.74rem;
   }
 }
+
+/* -- Shared Credit Accounts V73 -- */
+html[data-ui="organic-v41"] .card-form .credit-account-fields {
+  margin-top: 0.15rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(93, 112, 82, 0.14);
+}
+
+html[data-ui="organic-v41"] .card-form .field-help {
+  margin: -0.35rem 0 0.2rem;
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  line-height: 1.5;
+}
+
+html[data-ui="organic-v41"] .card-form #cardCreditAccountInput,
+html[data-ui="organic-v41"] .card-form #cardCreditAccountNameInput {
+  min-width: 0;
+}

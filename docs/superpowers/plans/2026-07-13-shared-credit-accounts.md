@@ -16,10 +16,10 @@
 - Create: `credit-account-model.js`
 - Create: `tests/credit-account-model.test.cjs`
 
-- [ ] Write failing tests for unique totals, two-card pooled usage, legacy-card migration, and orphan removal.
-- [ ] Run `node --test tests/credit-account-model.test.cjs` and confirm the tests fail because the module does not exist.
-- [ ] Implement `accountTotal`, `usageForAccount`, `migrateCreditAccounts`, and `removeOrphanAccounts`.
-- [ ] Run the tests and confirm all model tests pass.
+- [x] Write failing tests for unique totals, two-card pooled usage, legacy-card migration, and orphan removal.
+- [x] Run `node --test tests/credit-account-model.test.cjs` and confirm the tests fail because the module does not exist.
+- [x] Implement `accountTotal`, `usageForAccount`, `migrateCreditAccounts`, and `removeOrphanAccounts`.
+- [x] Run the tests and confirm all model tests pass.
 
 ### Task 2: Local data and cloud snapshots
 
@@ -29,11 +29,11 @@
 - Modify: `supabase/schema.sql`
 - Modify: `index.html`
 
-- [ ] Load and save `creditAccounts` under `pointsLedger_credit_accounts_v1`.
-- [ ] Run version-3 migration before bill and record migration.
-- [ ] Include accounts in local backups, imports, cloud exports, and cloud imports.
-- [ ] Advance client and database schema versions to 3.
-- [ ] Load `credit-account-model.js` before `app.js`.
+- [x] Load and save `creditAccounts` under `pointsLedger_credit_accounts_v1`.
+- [x] Run version-3 migration before bill and record migration.
+- [x] Include accounts in local backups, imports, cloud exports, and cloud imports.
+- [x] Advance client and database schema versions to 3.
+- [x] Load `credit-account-model.js` before `app.js`.
 
 ### Task 3: Card form and calculations
 
@@ -42,12 +42,12 @@
 - Modify: `app.js`
 - Modify: `organic-liquid.css`
 
-- [ ] Add account selector and account-name controls to the card drawer.
-- [ ] Populate account controls for new cards and existing cards.
-- [ ] Save account changes and remove orphan accounts after reassignment or deletion.
-- [ ] Calculate card usage from all bills in the linked account.
-- [ ] Deduplicate dashboard totals, temporary-limit reminders, and card-summary totals.
-- [ ] Label shared and independent accounts in card rows and the card summary.
+- [x] Add account selector and account-name controls to the card drawer.
+- [x] Populate account controls for new cards and existing cards.
+- [x] Save account changes and remove orphan accounts after reassignment or deletion.
+- [x] Calculate card usage from all bills in the linked account.
+- [x] Deduplicate dashboard totals, temporary-limit reminders, and card-summary totals.
+- [x] Label shared and independent accounts in card rows and the card summary.
 
 ### Task 4: Verification and publication
 
@@ -55,7 +55,7 @@
 - Modify: `README.md`
 - Verify: all changed runtime files
 
-- [ ] Run model, toast, syntax, and whitespace checks.
-- [ ] Verify two cards sharing one account in the real browser at desktop and mobile sizes.
-- [ ] Confirm two card bills sum into one pool usage and the dashboard counts the limit once.
+- [x] Run model, toast, syntax, and whitespace checks.
+- [x] Verify two cards sharing one account in the real browser at desktop and mobile sizes.
+- [x] Confirm two card bills sum into one pool usage and the dashboard counts the limit once.
 - [ ] Commit, merge to `main`, push GitHub, deploy Vercel, and verify production assets.

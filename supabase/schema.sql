@@ -1,12 +1,13 @@
 create table if not exists public.ledger_state (
   user_id uuid primary key references auth.users (id) on delete cascade,
   data jsonb not null default '{}'::jsonb,
-  schema_version smallint not null default 2 check (schema_version > 0),
+  schema_version smallint not null default 3 check (schema_version > 0),
   updated_at timestamptz not null default now(),
   constraint ledger_state_data_is_object check (jsonb_typeof(data) = 'object')
 );
 
 alter table public.ledger_state enable row level security;
+alter table public.ledger_state alter column schema_version set default 3;
 
 revoke all on table public.ledger_state from public;
 revoke all on table public.ledger_state from anon;
