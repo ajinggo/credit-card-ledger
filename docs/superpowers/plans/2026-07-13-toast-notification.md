@@ -16,7 +16,7 @@
 - Create: `tests/toast-layout.test.mjs`
 - Read: `organic-liquid.css`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```javascript
 import assert from "node:assert/strict";
@@ -34,7 +34,7 @@ assert.match(block, /\.toast\.success::before/);
 assert.match(block, /\.toast\.error::before/);
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run: `node tests/toast-layout.test.mjs`
 
@@ -45,7 +45,7 @@ Expected: FAIL with `missing final toast feedback block`.
 **Files:**
 - Modify: `organic-liquid.css`
 
-- [ ] **Step 1: Add the final scoped CSS block**
+- [x] **Step 1: Add the final scoped CSS block**
 
 Append a `Toast Feedback V72` block that:
 
@@ -66,13 +66,13 @@ html[data-ui="organic-v41"] .toast.show {
 
 Complete the block with the approved frosted light/dark surfaces, circular success/error icons, wrapping behavior, and non-interactive pointer behavior.
 
-- [ ] **Step 2: Run the regression test**
+- [x] **Step 2: Run the regression test**
 
 Run: `node tests/toast-layout.test.mjs`
 
 Expected: PASS with no output and exit code 0.
 
-- [ ] **Step 3: Run syntax and whitespace checks**
+- [x] **Step 3: Run syntax and whitespace checks**
 
 Run: `node --check app.js && node --check cloud-sync.js && git diff --check`
 
@@ -84,15 +84,15 @@ Expected: all commands exit 0.
 - Verify: `index.html`
 - Verify: `organic-liquid.css`
 
-- [ ] **Step 1: Trigger the toast in the fee workflow**
+- [x] **Step 1: Trigger the toast in the fee workflow**
 
 Run the app locally, open the fee-entry workflow, save a test entry, and verify the notification is below the fixed header.
 
-- [ ] **Step 2: Verify responsive and theme states**
+- [x] **Step 2: Verify responsive and theme states**
 
 Capture desktop and mobile screenshots. Confirm the toast stays inside the viewport, remains readable in light and dark themes, and does not block pointer input.
 
-- [ ] **Step 3: Commit and push**
+- [x] **Step 3: Commit and push**
 
 ```bash
 git add organic-liquid.css tests/toast-layout.test.mjs docs/superpowers/plans/2026-07-13-toast-notification.md
