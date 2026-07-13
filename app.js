@@ -27,7 +27,10 @@ function applyTheme(theme, persist = true) {
   themeToggle.setAttribute("aria-label", actionLabel);
   themeToggle.title = actionLabel;
   themeColorMeta?.setAttribute("content", nextTheme === "dark" ? "#151914" : "#fdfcf8");
-  if (persist) localStorage.setItem(THEME_KEY, nextTheme);
+  if (persist) {
+    localStorage.setItem(THEME_KEY, nextTheme);
+    window.ledgerCloud?.schedulePush();
+  }
 }
 
 const savedTheme = localStorage.getItem(THEME_KEY);
@@ -231,6 +234,7 @@ function switchView(view, focusTab = false) {
   const activeView = validViews.has(view) ? view : "cards";
   document.body.dataset.activeView = activeView;
   localStorage.setItem(VIEW_KEY, activeView);
+  window.ledgerCloud?.schedulePush();
 
   $$('[data-view-tab]').forEach((tab) => {
     const active = tab.dataset.viewTab === activeView;
@@ -276,11 +280,11 @@ function load(key) {
   try { return JSON.parse(localStorage.getItem(key) || "[]"); }
   catch { return []; }
 }
-function saveRecords() { localStorage.setItem(RECORDS_KEY, JSON.stringify(records)); }
-function saveCards() { localStorage.setItem(CARDS_KEY, JSON.stringify(cards)); }
-function saveBills() { localStorage.setItem(BILLS_KEY, JSON.stringify(bills)); }
-function saveLoyaltyAccounts() { localStorage.setItem(LOYALTY_KEY, JSON.stringify(loyaltyAccounts)); }
-function saveRecentRates() { localStorage.setItem(RECENT_RATES_KEY, JSON.stringify(recentRates)); }
+function saveRecords() { localStorage.setItem(RECORDS_KEY, JSON.stringify(records)); window.ledgerCloud?.schedulePush(); }
+function saveCards() { localStorage.setItem(CARDS_KEY, JSON.stringify(cards)); window.ledgerCloud?.schedulePush(); }
+function saveBills() { localStorage.setItem(BILLS_KEY, JSON.stringify(bills)); window.ledgerCloud?.schedulePush(); }
+function saveLoyaltyAccounts() { localStorage.setItem(LOYALTY_KEY, JSON.stringify(loyaltyAccounts)); window.ledgerCloud?.schedulePush(); }
+function saveRecentRates() { localStorage.setItem(RECENT_RATES_KEY, JSON.stringify(recentRates)); window.ledgerCloud?.schedulePush(); }
 
 // ── 工具函数 ─────────────────────────────────────
 const makeId = () =>
@@ -387,6 +391,7 @@ function showToast(msg, type = "success") {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2600);
 }
+window.showToast = showToast;
 
 // ── 确认弹窗 ─────────────────────────────────────
 const confirmModal = $("#confirmModal");
@@ -433,7 +438,10 @@ function setPrivacy(enabled, persist = true) {
   const label = privacyEnabled ? "显示敏感金额" : "隐藏敏感金额";
   button.setAttribute("aria-label", label);
   button.title = label;
-  if (persist) localStorage.setItem("pointsLedger_privacy_v1", String(privacyEnabled));
+  if (persist) {
+    localStorage.setItem("pointsLedger_privacy_v1", String(privacyEnabled));
+    window.ledgerCloud?.schedulePush();
+  }
 }
 
 function closeUtilityDrawers() {
@@ -525,6 +533,7 @@ function buildReminders() {
 
 function saveReminderReadState() {
   localStorage.setItem(REMINDER_READ_KEY, JSON.stringify([...reminderReadIds]));
+  window.ledgerCloud?.schedulePush();
 }
 
 function markReminderRead(id) {
@@ -2011,6 +2020,56 @@ function render() {
   renderReminders();
   updateBackupCounts();
 }
+
+function exportLedgerSnapshot() {
+  return {
+    format: "credit-card-ledger-cloud",
+    version: 2,
+    data: {
+      cards,
+      bills,
+      records,
+      loyaltyAccounts,
+      recentRates,
+    },
+    settings: {
+      theme: document.documentElement.dataset.theme || "light",
+      privacy: privacyEnabled,
+      view: document.body.dataset.activeView || "cards",
+      reminderReadIds: [...reminderReadIds],
+    },
+  };
+}
+
+function applyLedgerSnapshot(snapshot) {
+  const payload = snapshot?.data;
+  if (!payload || !Array.isArray(payload.cards) || !Array.isArray(payload.records) || !Array.isArray(payload.loyaltyAccounts)) {
+    throw new Error("云端账本格式无效");
+  }
+  cards = payload.cards;
+  bills = Array.isArray(payload.bills) ? payload.bills : [];
+  records = payload.records;
+  loyaltyAccounts = payload.loyaltyAccounts;
+  recentRates = Array.isArray(payload.recentRates) ? payload.recentRates : [];
+  reminderReadIds = new Set(Array.isArray(snapshot.settings?.reminderReadIds) ? snapshot.settings.reminderReadIds : []);
+  migrateDataModel();
+  saveCards();
+  saveBills();
+  saveRecords();
+  saveLoyaltyAccounts();
+  saveRecentRates();
+  saveReminderReadState();
+  if (snapshot.settings?.theme) applyTheme(snapshot.settings.theme);
+  setPrivacy(Boolean(snapshot.settings?.privacy));
+  render();
+  if (validViews.has(snapshot.settings?.view)) switchView(snapshot.settings.view);
+}
+
+window.ledgerStateApi = Object.freeze({
+  exportSnapshot: exportLedgerSnapshot,
+  applySnapshot: applyLedgerSnapshot,
+  hasMeaningfulData: () => cards.length + bills.length + records.length + loyaltyAccounts.length > 0,
+});
 
 /* ══════════════════════════════════════════════════
    记录表单状态
