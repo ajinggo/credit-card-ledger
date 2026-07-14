@@ -8197,3 +8197,85 @@ html[data-ui="organic-v41"] .card-form #cardCreditAccountInput,
 html[data-ui="organic-v41"] .card-form #cardCreditAccountNameInput {
   min-width: 0;
 }
+
+/* -- My Cards Sorting V74 -- */
+html[data-ui="organic-v41"] .card-sort-control {
+  min-width: 12.5rem;
+  min-height: 2.7rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.24rem 0.35rem 0.24rem 0.72rem;
+  border: 1px solid rgba(93, 112, 82, 0.18);
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  background: rgba(255, 255, 252, 0.48);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.72);
+}
+
+html[data-ui="organic-v41"] .card-sort-control > span {
+  font-size: 0.65rem;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+html[data-ui="organic-v41"] .card-sort-control select {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.15rem;
+  padding: 0.35rem 1.85rem 0.35rem 0.6rem;
+  border: 0;
+  background-color: rgba(255, 255, 252, 0.62);
+  box-shadow: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+html[data-ui="organic-v41"] .card-row-actions .move-card {
+  width: 2.15rem;
+  min-width: 2.15rem;
+  height: 2.15rem;
+  min-height: 2.15rem;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 0.82rem;
+  line-height: 1;
+}
+
+html[data-ui="organic-v41"] .card-row-actions .move-card:disabled {
+  color: var(--muted-foreground);
+  border-color: rgba(93, 112, 82, 0.08);
+  background: rgba(221, 226, 216, 0.28);
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+}
+
+html[data-ui="organic-v41"][data-theme="dark"] .card-sort-control {
+  border-color: rgba(180, 200, 168, 0.16);
+  background: rgba(35, 42, 33, 0.52);
+}
+
+@media (max-width: 760px) {
+  html[data-ui="organic-v41"] .card-sort-control {
+    width: 100%;
+    min-width: 0;
+    flex: 1 0 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  html[data-ui="organic-v41"] .card-sort-control {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.18rem;
+    padding: 0.5rem 0.6rem 0.6rem;
+    border-radius: 8px;
+  }
+
+  html[data-ui="organic-v41"] .card-sort-control select {
+    min-height: 2.35rem;
+  }
+}

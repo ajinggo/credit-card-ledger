@@ -9,9 +9,11 @@ const CREDIT_ACCOUNTS_KEY = "pointsLedger_credit_accounts_v1";
 const BILLS_KEY = "pointsLedger_bills_v1";
 const LOYALTY_KEY = "pointsLedger_loyalty_v1";
 const RECENT_RATES_KEY = "pointsLedger_recent_rates_v1";
+const CARD_SORT_KEY = "pointsLedger_card_sort_v1";
 const SCHEMA_KEY = "pointsLedger_schema_v3";
-window.__pointsLedgerBuild = "shared-credit-accounts-v66";
+window.__pointsLedgerBuild = "card-sorting-v67";
 const CreditAccountModel = window.CreditAccountModel;
+const CardSortModel = window.CardSortModel;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -156,6 +158,7 @@ const toggleCardSummaryButton = $("#toggleCardSummaryButton");
 const closeCardSummaryButton = $("#closeCardSummaryButton");
 const addBillButton = $("#addBillButton");
 const addBillInlineButton = $("#addBillInlineButton");
+const cardSortSelect = $("#cardSortSelect");
 const billFormOverlay = $("#billFormOverlay");
 const billForm = $("#billForm");
 const billFormTitle = $("#billFormTitle");
@@ -213,6 +216,14 @@ let editingBillId = null;
 let editingLoyaltyId = null;
 let sortKey = "date";
 let sortDir = "desc";
+const validCardSortModes = new Set([
+  "custom", "name-asc", "name-desc", "used-desc", "used-asc",
+  "available-desc", "available-asc", "usage-desc", "usage-asc",
+  "bill-day-asc", "bill-day-desc", "due-day-asc", "due-day-desc",
+]);
+const storedCardSortMode = localStorage.getItem(CARD_SORT_KEY);
+let cardSortMode = validCardSortModes.has(storedCardSortMode) ? storedCardSortMode : "custom";
+cardSortSelect.value = cardSortMode;
 let feeFromRate = false;
 let feeFromManual = false;
 let cardSummaryOpen = false;
@@ -1292,11 +1303,25 @@ function openStatement(cardId) {
 
 function renderCards() {
   cardsEmpty.hidden = cards.length > 0;
-  cardsList.innerHTML = cards.map((c) => {
+  const metricsById = Object.fromEntries(cards.map((card) => {
+    const usage = cardUsageForSelectedPeriod(card);
+    return [card.id, {
+      ...usage,
+      billDayDistance: daysFromToday(nextMonthlyDate(card.billDay)),
+      dueDayDistance: daysFromToday(nextMonthlyDate(card.dueDay)),
+    }];
+  }));
+  const renderedCards = CardSortModel.sortCards(cards, cardSortMode, metricsById);
+  const customOrder = cardSortMode === "custom";
+  cardsList.innerHTML = renderedCards.map((c) => {
     const account = creditAccountForCard(c) || c;
     const st = expiryState(account);
-    const { selectedPeriod, used, available, usageRate } = cardUsageForSelectedPeriod(c);
+    const { selectedPeriod, used, available, usageRate } = metricsById[c.id];
     const annual = annualFeeProgress(c);
+    const customIndex = cards.findIndex((card) => card.id === c.id);
+    const moveControls = customOrder ? `
+          <button class="move-card move-card-up" type="button" data-id="${c.id}" data-direction="up" aria-label="上移卡片" title="上移"${customIndex <= 0 ? " disabled" : ""}>↑</button>
+          <button class="move-card move-card-down" type="button" data-id="${c.id}" data-direction="down" aria-label="下移卡片" title="下移"${customIndex >= cards.length - 1 ? " disabled" : ""}>↓</button>` : "";
     const annualTask = annual.trackable ? `<div class="annual-task${annual.complete ? " complete" : ""}">
       <div><span>年费任务</span><strong>${annual.current.toLocaleString("zh-CN")} / ${annual.target.toLocaleString("zh-CN")} ${annual.unit}</strong></div>
       <div class="annual-task-track"><span style="--annual-progress:${annual.rate.toFixed(2)}%"></span></div>
@@ -1305,6 +1330,7 @@ function renderCards() {
       <div class="card-row-main">
         <div><div class="card-row-name"></div><span class="card-row-type"></span></div>
         <div class="card-row-actions">
+          ${moveControls}
           <button class="statement-card" type="button" data-id="${c.id}">本期账单</button>
           <button class="edit-card" type="button" data-id="${c.id}">编辑</button>
           <button class="delete-card" type="button" data-id="${c.id}">删除</button>
@@ -1338,11 +1364,14 @@ function renderCards() {
   }).join("");
   // 安全写入卡名（防 XSS）
   cardsList.querySelectorAll(".card-row").forEach((row, i) => {
-    row.querySelector(".card-row-name").textContent = cards[i].name;
-    const account = creditAccountForCard(cards[i]);
-    const tail = cards[i].lastFour ? `尾号 ${cards[i].lastFour}` : "尾号未填写";
+    const card = renderedCards[i];
+    row.querySelector(".card-row-name").textContent = card.name;
+    row.querySelector(".move-card-up")?.setAttribute("aria-label", `上移 ${card.name || "未命名卡片"}`);
+    row.querySelector(".move-card-down")?.setAttribute("aria-label", `下移 ${card.name || "未命名卡片"}`);
+    const account = creditAccountForCard(card);
+    const tail = card.lastFour ? `尾号 ${card.lastFour}` : "尾号未填写";
     row.querySelector(".card-row-type").textContent = `${tail} · ${creditAccountTypeLabel(account)}：${account?.name || "未命名额度账户"}`;
-    const policy = cards[i].annualFee || "";
+    const policy = card.annualFee || "";
     const policyEl = row.querySelector(".card-row-policy");
     policyEl.hidden = !policy;
     policyEl.textContent = policy ? `年费：${policy}` : "";
@@ -1350,6 +1379,12 @@ function renderCards() {
   cardsList.querySelectorAll(".edit-card").forEach((b) => b.addEventListener("click", () => editCard(b.dataset.id)));
   cardsList.querySelectorAll(".delete-card").forEach((b) => b.addEventListener("click", () => deleteCard(b.dataset.id)));
   cardsList.querySelectorAll(".statement-card").forEach((b) => b.addEventListener("click", () => openStatement(b.dataset.id)));
+  cardsList.querySelectorAll(".move-card").forEach((button) => button.addEventListener("click", () => {
+    cards = CardSortModel.moveCard(cards, button.dataset.id, button.dataset.direction);
+    saveCards();
+    renderCards();
+    renderCardSummary();
+  }));
 }
 
 function renderCardSummary() {
@@ -2340,6 +2375,12 @@ $("#resetAdvancedFiltersButton").addEventListener("click", () => {
 });
 dashboardYearFilter.addEventListener("change", () => { renderDashboard(); renderCards(); renderBills(); updateDatalists(); renderReminders(); });
 dashboardMonthFilter.addEventListener("change", () => { renderDashboard(); renderCards(); renderBills(); updateDatalists(); renderReminders(); });
+cardSortSelect.addEventListener("change", () => {
+  cardSortMode = validCardSortModes.has(cardSortSelect.value) ? cardSortSelect.value : "custom";
+  cardSortSelect.value = cardSortMode;
+  localStorage.setItem(CARD_SORT_KEY, cardSortMode);
+  renderCards();
+});
 summaryYearFilter.addEventListener("change", renderStats);
 summaryMonthFilter.addEventListener("change", renderStats);
 

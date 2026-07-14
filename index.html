@@ -12,7 +12,7 @@
       }
     </script>
     <link rel="stylesheet" href="./styles.css?v=71" />
-    <link rel="stylesheet" href="./organic-liquid.css?v=73" />
+    <link rel="stylesheet" href="./organic-liquid.css?v=74" />
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -468,6 +468,24 @@
                   <p class="section-description">集中管理额度、账单周期和年费政策</p>
                 </div>
                 <div class="card-panel-actions">
+                  <label class="card-sort-control" for="cardSortSelect">
+                    <span>排序</span>
+                    <select id="cardSortSelect" aria-label="卡片排序方式">
+                      <option value="custom">自定义顺序</option>
+                      <option value="name-asc">卡片名称：A → Z</option>
+                      <option value="name-desc">卡片名称：Z → A</option>
+                      <option value="used-desc">本月已用：高 → 低</option>
+                      <option value="used-asc">本月已用：低 → 高</option>
+                      <option value="available-desc">可用额度：高 → 低</option>
+                      <option value="available-asc">可用额度：低 → 高</option>
+                      <option value="usage-desc">额度使用率：高 → 低</option>
+                      <option value="usage-asc">额度使用率：低 → 高</option>
+                      <option value="bill-day-asc">账单日：近 → 远</option>
+                      <option value="bill-day-desc">账单日：远 → 近</option>
+                      <option value="due-day-asc">还款日：近 → 远</option>
+                      <option value="due-day-desc">还款日：远 → 近</option>
+                    </select>
+                  </label>
                   <button id="addBillButton" class="btn-outline" type="button">登记账单</button>
                   <button id="toggleCardSummaryButton" class="btn-outline" type="button" aria-expanded="false">卡汇总</button>
                   <button id="addCardButton" class="btn-primary card-add-button" type="button" onclick="window.openCardDrawer?.(event)">＋ 添加卡片</button>
@@ -679,7 +697,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2/dist/umd/supabase.js" integrity="sha384-yifgV8iFWyp5cgu+V1G1rtlEHpEErPlL5fTrkUELIsWq0CIVDON2WP/NlXVJT3vO" crossorigin="anonymous"></script>
     <script src="./credit-account-model.js?v=1"></script>
-    <script src="./app.js?v=66"></script>
+    <script src="./card-sort-model.js?v=1"></script>
+    <script src="./app.js?v=67"></script>
     <script src="./cloud-sync.js?v=1"></script>
   </body>
 </html>
