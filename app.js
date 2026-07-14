@@ -10,10 +10,12 @@ const BILLS_KEY = "pointsLedger_bills_v1";
 const LOYALTY_KEY = "pointsLedger_loyalty_v1";
 const RECENT_RATES_KEY = "pointsLedger_recent_rates_v1";
 const CARD_SORT_KEY = "pointsLedger_card_sort_v1";
+const FEE_VISIBILITY_KEY = "pointsLedger_fee_visibility_v1";
 const SCHEMA_KEY = "pointsLedger_schema_v3";
-window.__pointsLedgerBuild = "card-sorting-v67";
+window.__pointsLedgerBuild = "fee-dashboard-total-fees-v71";
 const CreditAccountModel = window.CreditAccountModel;
 const CardSortModel = window.CardSortModel;
+const FeeVisibilityModel = window.FeeVisibilityModel;
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -65,6 +67,11 @@ const dataToolsOverlay = $("#dataToolsOverlay");
 const statementOverlay = $("#statementOverlay");
 const statementContent = $("#statementContent");
 const advancedFilters = $("#advancedFilters");
+const displaySettingsControl = $(".display-settings-control");
+const displaySettingsButton = $("#displaySettingsButton");
+const displaySettingsPanel = $("#displaySettingsPanel");
+const displaySettingsStatus = $("#displaySettingsStatus");
+const recordSummaryStrip = $("#recordSummaryStrip");
 
 const inputs = {
   date: $("#dateInput"),
@@ -204,6 +211,7 @@ let creditAccounts = load(CREDIT_ACCOUNTS_KEY);
 let bills = load(BILLS_KEY);
 let loyaltyAccounts = load(LOYALTY_KEY);
 let recentRates = load(RECENT_RATES_KEY);
+let feeVisibility = FeeVisibilityModel.normalizeVisibility(load(FEE_VISIBILITY_KEY));
 if (!Array.isArray(cards)) cards = [];
 if (!Array.isArray(creditAccounts)) creditAccounts = [];
 if (!Array.isArray(records)) records = [];
@@ -250,6 +258,7 @@ function closeEntryDrawer() {
 
 function switchView(view, focusTab = false) {
   const activeView = validViews.has(view) ? view : "cards";
+  if (activeView !== "fees") setDisplaySettingsOpen(false);
   document.body.dataset.activeView = activeView;
   localStorage.setItem(VIEW_KEY, activeView);
   window.ledgerCloud?.schedulePush();
@@ -304,6 +313,11 @@ function saveCreditAccounts() { localStorage.setItem(CREDIT_ACCOUNTS_KEY, JSON.s
 function saveBills() { localStorage.setItem(BILLS_KEY, JSON.stringify(bills)); window.ledgerCloud?.schedulePush(); }
 function saveLoyaltyAccounts() { localStorage.setItem(LOYALTY_KEY, JSON.stringify(loyaltyAccounts)); window.ledgerCloud?.schedulePush(); }
 function saveRecentRates() { localStorage.setItem(RECENT_RATES_KEY, JSON.stringify(recentRates)); window.ledgerCloud?.schedulePush(); }
+function saveFeeVisibility(sync = true) {
+  feeVisibility = FeeVisibilityModel.normalizeVisibility(feeVisibility);
+  localStorage.setItem(FEE_VISIBILITY_KEY, JSON.stringify(feeVisibility));
+  if (sync) window.ledgerCloud?.schedulePush();
+}
 
 // ── 工具函数 ─────────────────────────────────────
 const makeId = () =>
@@ -726,6 +740,7 @@ function exportFullBackup() {
       privacy: privacyEnabled,
       view: document.body.dataset.activeView || "cards",
       reminderReadIds: [...reminderReadIds],
+      feeVisibility,
     },
   };
   const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json;charset=utf-8" });
@@ -757,6 +772,8 @@ async function importFullBackup(file) {
     setPrivacy(Boolean(backup.settings?.privacy));
     reminderReadIds = new Set(Array.isArray(backup.settings?.reminderReadIds) ? backup.settings.reminderReadIds : []);
     localStorage.setItem(REMINDER_READ_KEY, JSON.stringify([...reminderReadIds]));
+    feeVisibility = FeeVisibilityModel.normalizeVisibility(backup.settings?.feeVisibility);
+    saveFeeVisibility(false);
     render();
     if (validViews.has(backup.settings?.view)) switchView(backup.settings.view);
     closeUtilityDrawers();
@@ -1114,7 +1131,10 @@ cardSummaryPanel.addEventListener("click", (e) => {
   }
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && (!reminderOverlay.hidden || !dataToolsOverlay.hidden || !statementOverlay.hidden)) {
+  if (e.key === "Escape" && !displaySettingsPanel.hidden) {
+    setDisplaySettingsOpen(false);
+    displaySettingsButton.focus();
+  } else if (e.key === "Escape" && (!reminderOverlay.hidden || !dataToolsOverlay.hidden || !statementOverlay.hidden)) {
     closeUtilityDrawers();
   } else if (e.key === "Escape" && !entryFormOverlay.hidden) {
     closeEntryDrawer();
@@ -1970,13 +1990,12 @@ function renderStats() {
   const totalCashout = sum(f, "cashout");
   const totalFee = sum(f, "fee");
   const totalPointValue = sum(f, "pointValue");
-  const net = totalPointValue - totalFee;
 
-  out.netProfit.textContent = money(net);
-  out.netProfit.className = net < 0 ? "loss" : net > 0 ? "gain" : "";
+  out.netProfit.textContent = money(totalFee);
+  out.netProfit.className = "";
   out.profitHint.textContent = f.length
-    ? `${f.length} 笔 · ${net >= 0 ? "积分价值覆盖成本" : "手续费高于积分价值"}`
-    : "暂无记录";
+    ? `${f.length} 笔手续费记录`
+    : "当前周期暂无手续费记录";
   out.totalFee.textContent = money(totalFee);
   out.totalPointValue.textContent = money(totalPointValue);
   out.totalCashout.textContent = money(totalCashout);
@@ -1999,18 +2018,18 @@ function renderTrend() {
   records.forEach((r) => {
     const k = monthKey(r.date);
     if (!k) return;
-    byMonth[k] = (byMonth[k] || 0) + (r.pointValue - r.fee);
+    byMonth[k] = (byMonth[k] || 0) + Number(r.fee || 0);
   });
   const keys = Object.keys(byMonth).sort();
   chart.innerHTML = "";
   empty.hidden = keys.length >= 2;
   if (keys.length < 2) return;
   const values = keys.map((k) => byMonth[k]);
-  const maxAbs = Math.max(...values.map(Math.abs), 0.01);
+  const maxFee = Math.max(...values, 0.01);
   chart.innerHTML = keys.slice(-12).map((k) => {
     const v = byMonth[k];
-    const h = Math.max(4, Math.round((Math.abs(v) / maxAbs) * 64));
-    const cls = v > 0 ? "positive" : v < 0 ? "negative" : "zero";
+    const h = Math.max(4, Math.round((v / maxFee) * 64));
+    const cls = v > 0 ? "positive" : "zero";
     return `<button class="trend-bar-group analytics-bar-button" type="button" data-month="${k}" title="查看 ${k} 记录">
       <div class="trend-bar ${cls}" style="height:${h}px" title="${k}: ${money(v)}"></div>
       <span class="trend-month">${k.slice(5)}</span>
@@ -2099,6 +2118,73 @@ function renderRecordSummary(list) {
   recordSummary.net.className = net < 0 ? "loss" : net > 0 ? "gain" : "";
 }
 
+const recordColumnWidths = Object.freeze({
+  date: 7.2,
+  card: 11,
+  method: 7,
+  channel: 8,
+  cashout: 7.5,
+  fee: 6.5,
+  rate: 5.5,
+  pointValue: 7,
+  net: 6.5,
+  billMonth: 8,
+  actions: 7,
+});
+
+function syncFeeVisibilityControls() {
+  $$('[data-summary-visibility]').forEach((input) => {
+    input.checked = FeeVisibilityModel.isVisible(feeVisibility, "summary", input.dataset.summaryVisibility);
+  });
+  $$('[data-column-visibility]').forEach((input) => {
+    input.checked = FeeVisibilityModel.isVisible(feeVisibility, "columns", input.dataset.columnVisibility);
+  });
+}
+
+function applyFeeVisibility() {
+  feeVisibility = FeeVisibilityModel.normalizeVisibility(feeVisibility);
+  $$('[data-summary-metric]').forEach((element) => {
+    element.hidden = !FeeVisibilityModel.isVisible(feeVisibility, "summary", element.dataset.summaryMetric);
+  });
+  recordSummaryStrip.hidden = feeVisibility.summary.length === 0;
+  $$('[data-record-column]').forEach((element) => {
+    element.hidden = !FeeVisibilityModel.isVisible(feeVisibility, "columns", element.dataset.recordColumn);
+  });
+  const tableWidth = feeVisibility.columns.reduce((total, key) => total + (recordColumnWidths[key] || 6), 0);
+  $("#view-fees table").style.setProperty("--record-table-min-width", `${Math.max(30, tableWidth)}rem`);
+  syncFeeVisibilityControls();
+}
+
+function setDisplaySettingsOpen(open) {
+  const expanded = Boolean(open);
+  displaySettingsPanel.hidden = !expanded;
+  displaySettingsButton.setAttribute("aria-expanded", String(expanded));
+  if (!expanded) showDisplaySettingsStatus("");
+}
+
+function showDisplaySettingsStatus(message, tone = "success") {
+  displaySettingsStatus.textContent = message;
+  displaySettingsStatus.className = `display-settings-status ${tone}`;
+  displaySettingsStatus.hidden = !message;
+}
+
+function updateFeeVisibilityFromInput(input) {
+  const isSummary = input.hasAttribute("data-summary-visibility");
+  const group = isSummary ? "summary" : "columns";
+  const key = isSummary ? input.dataset.summaryVisibility : input.dataset.columnVisibility;
+  const attemptedHide = !input.checked;
+  const result = FeeVisibilityModel.setVisibility(feeVisibility, group, key, input.checked);
+  if (!result.changed) {
+    applyFeeVisibility();
+    if (group === "columns" && attemptedHide) showDisplaySettingsStatus("至少保留一个明细列", "error");
+    return;
+  }
+  feeVisibility = result.settings;
+  saveFeeVisibility();
+  applyFeeVisibility();
+  showDisplaySettingsStatus("");
+}
+
 function renderRecords() {
   const filtered = getFilteredRecords();
   recordsBody.innerHTML = "";
@@ -2111,17 +2197,17 @@ function renderRecords() {
     const row = document.createElement("tr");
     if (r.id === editingId) row.classList.add("editing-row");
     row.innerHTML = `
-      <td>${r.date}</td>
-      <td><span class="cell-card"></span><span class="cell-note"></span></td>
-      <td><span class="cell-method"></span></td>
-      <td><span class="cell-channel"></span></td>
-      <td class="num">${money(r.cashout)}</td>
-      <td class="num">${money(r.fee)}</td>
-      <td class="num"><span class="fee-rate-badge">${feeRate.toFixed(2)}%</span></td>
-      <td class="num cell-strong">${money(r.pointValue)}</td>
-      <td class="num ${net < 0 ? "loss" : "gain"}">${money(net)}</td>
-      <td><span class="cell-bill-month"></span></td>
-      <td>
+      <td data-record-column="date">${r.date}</td>
+      <td class="record-card-cell" data-record-column="card"><span class="cell-card"></span><span class="cell-note"></span></td>
+      <td data-record-column="method"><span class="cell-method"></span></td>
+      <td data-record-column="channel"><span class="cell-channel"></span></td>
+      <td class="num" data-record-column="cashout">${money(r.cashout)}</td>
+      <td class="num" data-record-column="fee">${money(r.fee)}</td>
+      <td class="num" data-record-column="rate"><span class="fee-rate-badge">${feeRate.toFixed(2)}%</span></td>
+      <td class="num cell-strong" data-record-column="pointValue">${money(r.pointValue)}</td>
+      <td class="num ${net < 0 ? "loss" : "gain"}" data-record-column="net">${money(net)}</td>
+      <td data-record-column="billMonth"><span class="cell-bill-month"></span></td>
+      <td data-record-column="actions">
         <div class="row-actions">
           <button class="edit-row" type="button" data-id="${r.id}">编辑</button>
           <button class="delete-row" type="button" data-id="${r.id}">删除</button>
@@ -2146,6 +2232,7 @@ function renderRecords() {
       th.setAttribute("aria-sort", "none");
     }
   });
+  applyFeeVisibility();
 }
 
 function render() {
@@ -2185,6 +2272,7 @@ function exportLedgerSnapshot() {
       privacy: privacyEnabled,
       view: document.body.dataset.activeView || "cards",
       reminderReadIds: [...reminderReadIds],
+      feeVisibility,
     },
   };
 }
@@ -2201,6 +2289,7 @@ function applyLedgerSnapshot(snapshot) {
   loyaltyAccounts = payload.loyaltyAccounts;
   recentRates = Array.isArray(payload.recentRates) ? payload.recentRates : [];
   reminderReadIds = new Set(Array.isArray(snapshot.settings?.reminderReadIds) ? snapshot.settings.reminderReadIds : []);
+  feeVisibility = FeeVisibilityModel.normalizeVisibility(snapshot.settings?.feeVisibility);
   migrateDataModel();
   saveCards();
   saveCreditAccounts();
@@ -2209,6 +2298,7 @@ function applyLedgerSnapshot(snapshot) {
   saveLoyaltyAccounts();
   saveRecentRates();
   saveReminderReadState();
+  saveFeeVisibility(false);
   if (snapshot.settings?.theme) applyTheme(snapshot.settings.theme);
   setPrivacy(Boolean(snapshot.settings?.privacy));
   render();
@@ -2353,6 +2443,24 @@ $("#toggleAdvancedFiltersButton").addEventListener("click", () => {
   advancedFilters.hidden = !nextOpen;
   $("#toggleAdvancedFiltersButton").setAttribute("aria-expanded", String(nextOpen));
 });
+displaySettingsButton.addEventListener("click", () => {
+  setDisplaySettingsOpen(displaySettingsPanel.hidden);
+});
+displaySettingsPanel.addEventListener("change", (event) => {
+  const input = event.target.closest("[data-summary-visibility], [data-column-visibility]");
+  if (input) updateFeeVisibilityFromInput(input);
+});
+$("#resetDisplaySettingsButton").addEventListener("click", () => {
+  feeVisibility = FeeVisibilityModel.getDefaultVisibility();
+  saveFeeVisibility();
+  applyFeeVisibility();
+  showDisplaySettingsStatus("已恢复默认");
+});
+document.addEventListener("click", (event) => {
+  if (!displaySettingsPanel.hidden && !displaySettingsControl.contains(event.target)) {
+    setDisplaySettingsOpen(false);
+  }
+});
 [
   "#recordSearchInput", "#recordCardFilter", "#recordMethodFilter", "#recordNetFilter",
   "#recordStartDateFilter", "#recordEndDateFilter", "#recordMinAmountFilter", "#recordMaxAmountFilter",
@@ -2409,23 +2517,9 @@ out.cancelEdit.addEventListener("click", () => {
 // ── 初始化 ───────────────────────────────────────
 inputs.date.value = today();
 render();
+document.documentElement.classList.add("app-ready");
 
-// ── 滚动入场动效（尊重减少动效偏好）─────────────
+// ── 首屏内容直接可见，避免等待滚动观察器后才绘制 ──
 (function setupReveal() {
-  const els = $$(".reveal");
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce || !("IntersectionObserver" in window)) {
-    els.forEach((el) => el.classList.add("in"));
-    return;
-  }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((e, i) => {
-      if (e.isIntersecting) {
-        e.target.style.transitionDelay = `${Math.min(i * 60, 180)}ms`;
-        e.target.classList.add("in");
-        io.unobserve(e.target);
-      }
-    });
-  }, { threshold: 0.12, rootMargin: "-40px" });
-  els.forEach((el) => io.observe(el));
+  $$(".reveal").forEach((element) => element.classList.add("in"));
 })();

@@ -12,7 +12,8 @@
       }
     </script>
     <link rel="stylesheet" href="./styles.css?v=71" />
-    <link rel="stylesheet" href="./organic-liquid.css?v=74" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="./organic-liquid.css?v=77" />
   </head>
   <body>
     <a class="skip-link" href="#main">跳到主要内容</a>
@@ -321,12 +322,12 @@
       </div>
 
       <main id="main">
-        <!-- ── Hero: net profit + graphic ─────────── -->
-        <section id="view-fee-dashboard" class="hero reveal view-section" data-view="fee-dashboard" role="tabpanel" aria-labelledby="tab-fee-dashboard" aria-label="手续费与净收益概览">
+        <!-- ── Hero: total fees + graphic ─────────── -->
+        <section id="view-fee-dashboard" class="hero reveal view-section" data-view="fee-dashboard" role="tabpanel" aria-labelledby="tab-fee-dashboard" aria-label="手续费成本概览">
           <div class="net-card">
-            <div class="net-label"><span>净收益</span><span>Net Profit</span></div>
+            <div class="net-label"><span>总手续费</span><span>Total Fees</span></div>
             <strong id="netProfit">¥0.00</strong>
-            <p class="net-hint" id="profitHint">暂无记录</p>
+            <p class="net-hint" id="profitHint">当前周期暂无手续费记录</p>
           </div>
 
           <div class="hero-graphic" aria-hidden="true">
@@ -444,9 +445,9 @@
           </div>
           <div class="analytics-grid">
             <div class="analytics-chart-block">
-              <div class="analytics-chart-head"><strong>月度净收益</strong><span>积分价值减手续费</span></div>
-              <div class="trend-chart analytics-trend-chart" id="trendChart" aria-label="月度净收益趋势"></div>
-              <div id="trendEmpty" class="chart-empty">至少需要两个月的记录</div>
+              <div class="analytics-chart-head"><strong>月度手续费</strong><span>按月汇总实际手续费</span></div>
+              <div class="trend-chart analytics-trend-chart" id="trendChart" aria-label="月度手续费趋势"></div>
+              <div id="trendEmpty" class="chart-empty">至少需要两个月的手续费记录</div>
             </div>
             <div class="analytics-chart-block">
               <div class="analytics-chart-head"><strong>卡片手续费对比</strong><span>按信用卡汇总</span></div>
@@ -637,6 +638,40 @@
                   <select id="monthFilter"></select>
                 </label>
                 <button id="toggleAdvancedFiltersButton" class="btn-outline" type="button" aria-expanded="false">筛选</button>
+                <div class="display-settings-control">
+                  <button id="displaySettingsButton" class="btn-outline display-settings-button" type="button" aria-expanded="false" aria-controls="displaySettingsPanel">显示设置</button>
+                  <div id="displaySettingsPanel" class="display-settings-panel" role="group" aria-label="手续费汇总显示设置" hidden>
+                    <div class="display-settings-head"><strong>显示设置</strong><button id="resetDisplaySettingsButton" class="btn-ghost" type="button">恢复默认</button></div>
+                    <p id="displaySettingsStatus" class="display-settings-status" role="status" aria-live="polite" hidden></p>
+                    <div class="display-settings-groups">
+                      <fieldset>
+                        <legend>汇总指标</legend>
+                        <div class="display-settings-options summary-options">
+                          <label><input type="checkbox" data-summary-visibility="count" checked /><span>筛选记录</span></label>
+                          <label><input type="checkbox" data-summary-visibility="spend" checked /><span>套现总额</span></label>
+                          <label><input type="checkbox" data-summary-visibility="fee" checked /><span>手续费</span></label>
+                          <label><input type="checkbox" data-summary-visibility="net" checked /><span>净收益</span></label>
+                        </div>
+                      </fieldset>
+                      <fieldset>
+                        <legend>记录明细列</legend>
+                        <div class="display-settings-options column-options">
+                          <label><input type="checkbox" data-column-visibility="date" checked /><span>日期</span></label>
+                          <label><input type="checkbox" data-column-visibility="card" checked /><span>信用卡</span></label>
+                          <label><input type="checkbox" data-column-visibility="method" checked /><span>消费形式</span></label>
+                          <label><input type="checkbox" data-column-visibility="channel" checked /><span>渠道</span></label>
+                          <label><input type="checkbox" data-column-visibility="cashout" checked /><span>套现金额</span></label>
+                          <label><input type="checkbox" data-column-visibility="fee" checked /><span>手续费</span></label>
+                          <label><input type="checkbox" data-column-visibility="rate" checked /><span>费率</span></label>
+                          <label><input type="checkbox" data-column-visibility="pointValue" checked /><span>积分价值</span></label>
+                          <label><input type="checkbox" data-column-visibility="net" checked /><span>净收益</span></label>
+                          <label><input type="checkbox" data-column-visibility="billMonth" checked /><span>账单月份</span></label>
+                          <label><input type="checkbox" data-column-visibility="actions" checked /><span>操作</span></label>
+                        </div>
+                      </fieldset>
+                    </div>
+                  </div>
+                </div>
                 <button id="exportButton" class="btn-outline" type="button">导出 CSV</button>
                 <button id="clearAllButton" class="btn-outline danger" type="button">删除全部</button>
               </div>
@@ -655,27 +690,27 @@
             </div>
 
             <div id="recordSummaryStrip" class="record-summary-strip" aria-label="筛选记录汇总">
-              <span><small>筛选记录</small><strong id="filteredRecordCount">0 笔</strong></span>
-              <span><small>套现总额</small><strong id="filteredSpendTotal">¥0.00</strong></span>
-              <span><small>手续费</small><strong id="filteredFeeTotal">¥0.00</strong></span>
-              <span><small>净收益</small><strong id="filteredNetTotal">¥0.00</strong></span>
+              <span data-summary-metric="count"><small>筛选记录</small><strong id="filteredRecordCount">0 笔</strong></span>
+              <span data-summary-metric="spend"><small>套现总额</small><strong id="filteredSpendTotal">¥0.00</strong></span>
+              <span data-summary-metric="fee"><small>手续费</small><strong id="filteredFeeTotal">¥0.00</strong></span>
+              <span data-summary-metric="net"><small>净收益</small><strong id="filteredNetTotal">¥0.00</strong></span>
             </div>
 
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th data-sort="date" class="sortable" tabindex="0">日期</th>
-                    <th>信用卡</th>
-                    <th>消费形式</th>
-                    <th>渠道</th>
-                    <th data-sort="cashout" class="sortable num" tabindex="0">套现金额</th>
-                    <th data-sort="fee" class="sortable num" tabindex="0">手续费</th>
-                    <th class="num">费率</th>
-                    <th data-sort="pointValue" class="sortable num" tabindex="0">积分价值</th>
-                    <th data-sort="net" class="sortable num" tabindex="0">净收益</th>
-                    <th>账单月份</th>
-                    <th>操作</th>
+                    <th data-record-column="date" data-sort="date" class="sortable" tabindex="0">日期</th>
+                    <th data-record-column="card">信用卡</th>
+                    <th data-record-column="method">消费形式</th>
+                    <th data-record-column="channel">渠道</th>
+                    <th data-record-column="cashout" data-sort="cashout" class="sortable num" tabindex="0">套现金额</th>
+                    <th data-record-column="fee" data-sort="fee" class="sortable num" tabindex="0">手续费</th>
+                    <th data-record-column="rate" class="num">费率</th>
+                    <th data-record-column="pointValue" data-sort="pointValue" class="sortable num" tabindex="0">积分价值</th>
+                    <th data-record-column="net" data-sort="net" class="sortable num" tabindex="0">净收益</th>
+                    <th data-record-column="billMonth">账单月份</th>
+                    <th data-record-column="actions">操作</th>
                   </tr>
                 </thead>
                 <tbody id="recordsBody"></tbody>
@@ -695,10 +730,10 @@
       <footer class="app-footer">数据仅保存在本机浏览器 · 可通过标题栏数据工具导出完整 JSON 备份</footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2/dist/umd/supabase.js" integrity="sha384-yifgV8iFWyp5cgu+V1G1rtlEHpEErPlL5fTrkUELIsWq0CIVDON2WP/NlXVJT3vO" crossorigin="anonymous"></script>
     <script src="./credit-account-model.js?v=1"></script>
     <script src="./card-sort-model.js?v=1"></script>
-    <script src="./app.js?v=67"></script>
-    <script src="./cloud-sync.js?v=1"></script>
+    <script src="./fee-visibility-model.js?v=1"></script>
+    <script src="./app.js?v=71"></script>
+    <script src="./cloud-sync.js?v=2"></script>
   </body>
 </html>

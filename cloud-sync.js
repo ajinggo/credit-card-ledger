@@ -1,4 +1,35 @@
 (function setupCloudLedger() {
+  const SUPABASE_LIBRARY_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2/dist/umd/supabase.js";
+  const SUPABASE_LIBRARY_INTEGRITY = "sha384-yifgV8iFWyp5cgu+V1G1rtlEHpEErPlL5fTrkUELIsWq0CIVDON2WP/NlXVJT3vO";
+  let supabaseLoadPromise = null;
+
+  function loadSupabaseLibrary() {
+    if (window.supabase?.createClient) return Promise.resolve(window.supabase);
+    if (supabaseLoadPromise) return supabaseLoadPromise;
+    supabaseLoadPromise = new Promise((resolve, reject) => {
+      const script = document.querySelector("script[data-supabase-client]") || document.createElement("script");
+      const timeoutId = setTimeout(() => reject(new Error("登录组件加载超时，请检查网络后刷新。")), 15000);
+      const complete = (callback) => {
+        clearTimeout(timeoutId);
+        callback();
+      };
+      script.addEventListener("load", () => complete(() => {
+        if (window.supabase?.createClient) resolve(window.supabase);
+        else reject(new Error("登录组件加载失败，请刷新后重试。"));
+      }), { once: true });
+      script.addEventListener("error", () => complete(() => reject(new Error("登录组件加载失败，请检查网络后刷新。"))), { once: true });
+      if (!script.isConnected) {
+        script.src = SUPABASE_LIBRARY_URL;
+        script.async = true;
+        script.integrity = SUPABASE_LIBRARY_INTEGRITY;
+        script.crossOrigin = "anonymous";
+        script.dataset.supabaseClient = "";
+        document.head.append(script);
+      }
+    });
+    return supabaseLoadPromise;
+  }
+
   const config = window.SUPABASE_CONFIG || {};
   const configured = /^https:\/\/.+\.supabase\.co$/.test(config.url || "")
     && typeof config.publishableKey === "string"
@@ -216,11 +247,22 @@
       if (footer) footer.textContent = "数据仅保存在本机浏览器 · 可通过标题栏数据工具导出完整 JSON 备份";
       return;
     }
-    if (!window.supabase?.createClient) {
+    const authSubmitButton = authForm?.querySelector("button[type='submit']");
+    authOverlay.hidden = false;
+    authOverlay.setAttribute("aria-busy", "true");
+    if (authSubmitButton) authSubmitButton.disabled = true;
+    setAuthMessage("正在连接云端…");
+    try {
+      await loadSupabaseLibrary();
+    } catch (error) {
       showSignedOut();
-      setAuthMessage("登录组件加载失败，请检查网络后刷新。", "error");
+      setAuthMessage(error.message, "error");
+      authOverlay.setAttribute("aria-busy", "false");
       return;
     }
+    authOverlay.setAttribute("aria-busy", "false");
+    if (authSubmitButton) authSubmitButton.disabled = false;
+    setAuthMessage("");
 
     client = window.supabase.createClient(config.url, config.publishableKey, {
       auth: {
