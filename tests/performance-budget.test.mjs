@@ -9,6 +9,8 @@ const appJs = await readFile(new URL("app.js", root), "utf8");
 const organicCss = await readFile(new URL("organic-liquid.css", root), "utf8");
 
 const V82_MARKER = "Performance Pass V82";
+const UI_SCOPE = 'html[data-ui="organic-v41"]';
+const DARK_UI_SCOPE = 'html[data-ui="organic-v41"][data-theme="dark"]';
 const repeatedUnitSelectors = [
   ".card-row-wide",
   ".bill-row",
@@ -26,6 +28,79 @@ const repeatedSurfaceSelectors = [
   ".loyalty-card",
   ".record-summary-strip",
   ".table-wrap",
+];
+const compositingResetSelectors = [
+  `${UI_SCOPE} :is(.app-header, .app-header.is-compact)`,
+  `${UI_SCOPE} body.nav-collapsed .app-header`,
+  `${UI_SCOPE} :is(.app-header, .app-header.is-compact) .section-tabs`,
+  `${UI_SCOPE} body.nav-collapsed .app-header .section-tabs`,
+  ".side-tool-rail",
+  ".toast",
+  ".stats",
+  ".net-card",
+  ".hero-graphic",
+  ".analytics-chart-block",
+  ".card-row-wide",
+  ".billing-ledger",
+  ".bill-row",
+  ".loyalty-card",
+  ".record-summary-strip",
+  ".table-wrap",
+  ".advanced-filters",
+  ".display-settings-panel",
+  ".drawer-overlay",
+  ".modal-backdrop",
+  ".card-form",
+  ".card-summary-panel",
+  ".entry-drawer",
+  ".utility-drawer",
+  ".drawer-head",
+  ".card-form-actions",
+  ".entry-drawer-actions",
+  "input",
+  "select",
+  "textarea",
+  ".btn-primary",
+  ".btn-outline",
+  ".btn-ghost",
+  ".rate-chip",
+  `${UI_SCOPE} .dashboard .kpi`,
+  `${UI_SCOPE} .dashboard .limit-kpi`,
+  `${UI_SCOPE} :is(.row-actions, .card-row-actions, .loyalty-actions) button`,
+];
+const lightFixedChromeMaterialSelectors = [
+  `${UI_SCOPE} :is(.app-header, .app-header.is-compact)`,
+  `${UI_SCOPE} body.nav-collapsed .app-header`,
+  `${UI_SCOPE} :is(.app-header, .app-header.is-compact) .section-tabs`,
+  `${UI_SCOPE} body.nav-collapsed .app-header .section-tabs`,
+  ".side-tool-rail",
+  ".toast",
+  ".display-settings-panel",
+];
+const lightDrawerMaterialSelectors = [
+  ".card-form",
+  ".card-summary-panel",
+  ".entry-drawer",
+  ".utility-drawer",
+  ".drawer-head",
+  ".card-form-actions",
+  ".entry-drawer-actions",
+];
+const darkFixedDrawerMaterialSelectors = [
+  `${DARK_UI_SCOPE} :is(.app-header, .app-header.is-compact)`,
+  `${DARK_UI_SCOPE} body.nav-collapsed .app-header`,
+  `${DARK_UI_SCOPE} :is(.app-header, .app-header.is-compact) .section-tabs`,
+  `${DARK_UI_SCOPE} body.nav-collapsed .app-header .section-tabs`,
+  ".side-tool-rail",
+  ".toast",
+  ".display-settings-panel",
+  ".card-form",
+  ".card-summary-panel",
+  ".entry-drawer",
+  ".utility-drawer",
+  ".drawer-head",
+  ".card-form-actions",
+  ".entry-drawer-actions",
 ];
 
 function matchingBraceIndex(css, openBraceIndex) {
@@ -96,6 +171,12 @@ function assertRuleHasSelector(rule, selector, label = "rule") {
   assert.ok(ruleHasSelector(rule, selector), `${label} must include selector ${selector}`);
 }
 
+function assertRuleHasSelectors(rule, selectors, label) {
+  for (const selector of selectors) {
+    assertRuleHasSelector(rule, selector, label);
+  }
+}
+
 function v82Bounds(css) {
   const markerIndex = css.lastIndexOf(V82_MARKER);
   assert.ok(markerIndex >= 0, "V82 performance layer is missing");
@@ -117,6 +198,45 @@ function validateRepeatedContainmentRule(rule) {
   }
   assert.match(rule, /content-visibility:\s*auto/);
   assert.match(rule, /contain:\s*paint style/);
+}
+
+function validateCompositingReset(css) {
+  const rule = requiredRuleContainingSelector(css, compositingResetSelectors[0], {
+    containing: "\n  filter: none !important;",
+  });
+
+  assertRuleHasSelectors(rule, compositingResetSelectors, "compositing reset rule");
+  assert.match(rule, /^\s*filter:\s*none\s*!important;$/m);
+  assert.match(rule, /^\s*mix-blend-mode:\s*normal\s*!important;$/m);
+  assert.match(rule, /^\s*backdrop-filter:\s*none\s*!important;$/m);
+  assert.match(rule, /^\s*-webkit-backdrop-filter:\s*none\s*!important;$/m);
+}
+
+function validateLightFixedChromeMaterial(css) {
+  const rule = requiredRuleContainingSelector(css, lightFixedChromeMaterialSelectors[0], {
+    containing: "background: rgba(249, 250, 246, 0.98) !important",
+  });
+
+  assertRuleHasSelectors(rule, lightFixedChromeMaterialSelectors, "light fixed chrome material rule");
+  assert.match(rule, /^\s*background:\s*rgba\(249,\s*250,\s*246,\s*0\.98\)\s*!important;$/m);
+}
+
+function validateLightDrawerMaterial(css) {
+  const rule = requiredRuleContainingSelector(css, lightDrawerMaterialSelectors[0], {
+    containing: "background: #f8f9f4 !important",
+  });
+
+  assertRuleHasSelectors(rule, lightDrawerMaterialSelectors, "light drawer material rule");
+  assert.match(rule, /^\s*background:\s*#f8f9f4\s*!important;$/m);
+}
+
+function validateDarkFixedDrawerMaterial(css) {
+  const rule = requiredRuleContainingSelector(css, darkFixedDrawerMaterialSelectors[0], {
+    containing: "background: rgba(24, 30, 23, 0.99) !important",
+  });
+
+  assertRuleHasSelectors(rule, darkFixedDrawerMaterialSelectors, "dark fixed and drawer material rule");
+  assert.match(rule, /^\s*background:\s*rgba\(24,\s*30,\s*23,\s*0\.99\)\s*!important;$/m);
 }
 
 test("Supabase does not block the initial document parse", () => {
@@ -158,23 +278,7 @@ test("final performance layer wins after the mobile responsive layer", () => {
 });
 
 test("final performance layer scopes compositing resets to targeted surfaces", () => {
-  const compositingRule = requiredRuleContainingSelector(organicCss, ".app-header.is-compact", {
-    containing: "\n  filter: none !important;",
-  });
-
-  for (const selector of [
-    ".app-header.is-compact",
-    ".toast",
-    ".drawer-overlay",
-    ".dashboard .limit-kpi",
-    ".analytics-chart-block",
-  ]) {
-    assertRuleHasSelector(compositingRule, selector, "compositing reset rule");
-  }
-  assert.match(compositingRule, /^\s*filter:\s*none\s*!important;$/m);
-  assert.match(compositingRule, /^\s*mix-blend-mode:\s*normal\s*!important;$/m);
-  assert.match(compositingRule, /^\s*backdrop-filter:\s*none\s*!important;$/m);
-  assert.match(compositingRule, /^\s*-webkit-backdrop-filter:\s*none\s*!important;$/m);
+  validateCompositingReset(organicCss);
 
   const repeatedShadowRule = requiredRuleContainingSelector(organicCss, ".dashboard .kpi", {
     containing: "box-shadow: 0 1px 2px rgba(44, 55, 40, 0.08)",
@@ -183,21 +287,33 @@ test("final performance layer scopes compositing resets to targeted surfaces", (
     assertRuleHasSelector(repeatedShadowRule, selector, "repeated surface shadow rule");
   }
   assert.match(repeatedShadowRule, /box-shadow:\s*0 1px 2px rgba\(44, 55, 40, 0\.08\)[^;]*!important/);
+});
 
-  const lightChromeRule = requiredRuleContainingSelector(organicCss, ".side-tool-rail", {
-    containing: "background: rgba(249, 250, 246, 0.98) !important",
-  });
-  assertRuleHasSelector(lightChromeRule, ".app-header.is-compact", "light chrome rule");
-  assertRuleHasSelector(lightChromeRule, ".toast", "light chrome rule");
-  assert.match(lightChromeRule, /background:\s*rgba\(249, 250, 246, 0\.98\)\s*!important/);
+test("final performance layer scopes fixed and drawer materials to all targets", () => {
+  validateLightFixedChromeMaterial(organicCss);
+  validateLightDrawerMaterial(organicCss);
+  validateDarkFixedDrawerMaterial(organicCss);
+});
 
-  const darkChromeRule = requiredRuleContainingSelector(organicCss, ".side-tool-rail", {
-    containing: "background: rgba(24, 30, 23, 0.99) !important",
+test("compositing validator rejects a missing target in the full V82 source", () => {
+  const compositingRule = requiredRuleContainingSelector(organicCss, compositingResetSelectors[0], {
+    containing: "\n  filter: none !important;",
   });
-  assertRuleHasSelector(darkChromeRule, ".app-header.is-compact", "dark chrome rule");
-  assertRuleHasSelector(darkChromeRule, ".toast", "dark chrome rule");
-  assert.match(darkChromeRule, /\[data-theme="dark"\]/);
-  assert.match(darkChromeRule, /background:\s*rgba\(24, 30, 23, 0\.99\)\s*!important/);
+  const mutatedRule = compositingRule.replace("  .card-form,\n", "");
+  assert.notEqual(mutatedRule, compositingRule, "test mutation must remove .card-form from the compositing rule");
+
+  const mutatedCss = organicCss.replace(compositingRule, mutatedRule);
+  const originalCardFormCount = organicCss.match(/\.card-form/g)?.length ?? 0;
+  const mutatedCardFormCount = mutatedCss.match(/\.card-form/g)?.length ?? 0;
+  assert.equal(mutatedCardFormCount, originalCardFormCount - 1, "mutation must remove exactly one .card-form occurrence");
+
+  validateLightDrawerMaterial(mutatedCss);
+  validateDarkFixedDrawerMaterial(mutatedCss);
+
+  assert.throws(
+    () => validateCompositingReset(mutatedCss),
+    /compositing reset rule must include selector \.card-form/,
+  );
 });
 
 test("dark repeated surfaces use a restrained theme-specific shadow", () => {
