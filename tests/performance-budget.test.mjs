@@ -11,152 +11,129 @@ const organicCss = await readFile(new URL("organic-liquid.css", root), "utf8");
 const V82_MARKER = "Performance Pass V82";
 const UI_SCOPE = 'html[data-ui="organic-v41"]';
 const DARK_UI_SCOPE = 'html[data-ui="organic-v41"][data-theme="dark"]';
-const repeatedUnitSelectors = [
-  ".card-row-wide",
-  ".bill-row",
-  ".loyalty-card",
-  ".analytics-chart-block",
-];
-const repeatedSurfaceSelectors = [
-  ".dashboard .kpi",
-  ".net-card",
-  ".hero-graphic",
-  ".analytics-chart-block",
-  ".card-row-wide",
-  ".billing-ledger",
-  ".bill-row",
-  ".loyalty-card",
-  ".record-summary-strip",
-  ".table-wrap",
-];
-const compositingResetSelectors = [
+
+function groupedSelector(scope, selectors, suffix = "") {
+  return `${scope} :is(${selectors.join(", ")})${suffix}`;
+}
+
+const COMPOSITING_GROUP_SELECTOR = groupedSelector(UI_SCOPE, [
+  ".side-tool-rail", ".toast", ".stats", ".net-card", ".hero-graphic", ".analytics-chart-block",
+  ".card-row-wide", ".billing-ledger", ".bill-row", ".loyalty-card", ".record-summary-strip", ".table-wrap",
+  ".advanced-filters", ".display-settings-panel", ".drawer-overlay", ".modal-backdrop", ".card-form",
+  ".card-summary-panel", ".entry-drawer", ".utility-drawer", ".drawer-head", ".card-form-actions",
+  ".entry-drawer-actions", "input", "select", "textarea", ".btn-primary", ".btn-outline", ".btn-ghost", ".rate-chip",
+]);
+const COMPOSITING_SELECTORS = [
   `${UI_SCOPE} :is(.app-header, .app-header.is-compact)`,
   `${UI_SCOPE} body.nav-collapsed .app-header`,
   `${UI_SCOPE} :is(.app-header, .app-header.is-compact) .section-tabs`,
   `${UI_SCOPE} body.nav-collapsed .app-header .section-tabs`,
-  ".side-tool-rail",
-  ".toast",
-  ".stats",
-  ".net-card",
-  ".hero-graphic",
-  ".analytics-chart-block",
-  ".card-row-wide",
-  ".billing-ledger",
-  ".bill-row",
-  ".loyalty-card",
-  ".record-summary-strip",
-  ".table-wrap",
-  ".advanced-filters",
-  ".display-settings-panel",
-  ".drawer-overlay",
-  ".modal-backdrop",
-  ".card-form",
-  ".card-summary-panel",
-  ".entry-drawer",
-  ".utility-drawer",
-  ".drawer-head",
-  ".card-form-actions",
-  ".entry-drawer-actions",
-  "input",
-  "select",
-  "textarea",
-  ".btn-primary",
-  ".btn-outline",
-  ".btn-ghost",
-  ".rate-chip",
+  COMPOSITING_GROUP_SELECTOR,
   `${UI_SCOPE} .dashboard .kpi`,
   `${UI_SCOPE} .dashboard .limit-kpi`,
   `${UI_SCOPE} :is(.row-actions, .card-row-actions, .loyalty-actions) button`,
 ];
-const lightFixedChromeMaterialSelectors = [
+const LIGHT_FIXED_CHROME_SELECTORS = [
   `${UI_SCOPE} :is(.app-header, .app-header.is-compact)`,
   `${UI_SCOPE} body.nav-collapsed .app-header`,
   `${UI_SCOPE} :is(.app-header, .app-header.is-compact) .section-tabs`,
   `${UI_SCOPE} body.nav-collapsed .app-header .section-tabs`,
-  ".side-tool-rail",
-  ".toast",
-  ".display-settings-panel",
+  `${UI_SCOPE} :is(.side-tool-rail, .toast, .display-settings-panel)`,
 ];
-const lightDrawerMaterialSelectors = [
-  ".card-form",
-  ".card-summary-panel",
-  ".entry-drawer",
-  ".utility-drawer",
-  ".drawer-head",
-  ".card-form-actions",
-  ".entry-drawer-actions",
+const LIGHT_DRAWER_SELECTORS = [
+  groupedSelector(UI_SCOPE, [
+    ".card-form", ".card-summary-panel", ".entry-drawer", ".utility-drawer",
+    ".drawer-head", ".card-form-actions", ".entry-drawer-actions",
+  ]),
 ];
-const darkFixedDrawerMaterialSelectors = [
+const DARK_FIXED_DRAWER_SELECTORS = [
   `${DARK_UI_SCOPE} :is(.app-header, .app-header.is-compact)`,
   `${DARK_UI_SCOPE} body.nav-collapsed .app-header`,
   `${DARK_UI_SCOPE} :is(.app-header, .app-header.is-compact) .section-tabs`,
   `${DARK_UI_SCOPE} body.nav-collapsed .app-header .section-tabs`,
-  ".side-tool-rail",
-  ".toast",
-  ".display-settings-panel",
-  ".card-form",
-  ".card-summary-panel",
-  ".entry-drawer",
-  ".utility-drawer",
-  ".drawer-head",
-  ".card-form-actions",
-  ".entry-drawer-actions",
+  groupedSelector(DARK_UI_SCOPE, [
+    ".side-tool-rail", ".toast", ".display-settings-panel", ".card-form", ".card-summary-panel",
+    ".entry-drawer", ".utility-drawer", ".drawer-head", ".card-form-actions", ".entry-drawer-actions",
+  ]),
 ];
-const mobileShadowResetSelectors = [
-  ".app-header",
-  ".app-header.is-compact",
+const REPEATED_SURFACE_SELECTOR = groupedSelector(UI_SCOPE, [
+  ".dashboard .kpi", ".net-card", ".hero-graphic", ".analytics-chart-block", ".card-row-wide",
+  ".billing-ledger", ".bill-row", ".loyalty-card", ".record-summary-strip", ".table-wrap",
+]);
+const DARK_REPEATED_SURFACE_SELECTOR = REPEATED_SURFACE_SELECTOR.replace(UI_SCOPE, DARK_UI_SCOPE);
+const REPEATED_CONTAINMENT_SELECTOR = groupedSelector(UI_SCOPE, [
+  ".card-row-wide", ".bill-row", ".loyalty-card", ".analytics-chart-block",
+]);
+const MOBILE_PRIMARY_SHADOW_SELECTOR = groupedSelector(UI_SCOPE, [
+  ".app-header", ".app-header.is-compact", ".card-form",
+  ".card-summary-panel", ".entry-drawer", ".utility-drawer",
+]);
+const MOBILE_SHADOW_SELECTORS = [
+  MOBILE_PRIMARY_SHADOW_SELECTOR,
   `${UI_SCOPE} body.nav-collapsed .app-header`,
   `${UI_SCOPE} :is(.app-header, .app-header.is-compact) .section-tabs`,
   `${UI_SCOPE} body.nav-collapsed .app-header .section-tabs`,
-  ".card-form",
-  ".card-summary-panel",
-  ".entry-drawer",
-  ".utility-drawer",
+];
+const DRAWER_SCROLL_SELECTORS = [
+  groupedSelector(UI_SCOPE, [
+    ".card-form-body", ".bill-form-body", ".loyalty-form-body",
+    ".entry-drawer-body", ".card-summary-table-wrap", ".utility-drawer-body",
+  ]),
 ];
 
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function canonicalCssTokens(value) {
+  return value
+    .replace(/\s+/g, " ")
+    .replace(/\s*([:;,()])\s*/g, "$1")
+    .replace(/\s*!\s*/g, "!")
+    .trim();
 }
 
-function declarationPattern(property, valuePattern) {
-  return new RegExp(
-    `^[ \\t]*${escapeRegExp(property)}[ \\t]*:[ \\t]*${valuePattern}[ \\t]*;[ \\t]*$`,
-    "m",
-  );
+function ruleDeclarations(rule) {
+  const openBraceIndex = rule.indexOf("{");
+  const closeBraceIndex = rule.lastIndexOf("}");
+  assert.ok(openBraceIndex >= 0 && closeBraceIndex > openBraceIndex, "CSS rule has an invalid declaration block");
+
+  return canonicalCssTokens(rule.slice(openBraceIndex + 1, closeBraceIndex))
+    .split(";")
+    .map((declaration) => declaration.trim())
+    .filter(Boolean)
+    .map((declaration) => `${declaration};`);
 }
 
-const IMPORTANT_PATTERN = "[ \\t]*![ \\t]*important";
-const FILTER_NONE_DECLARATION = declarationPattern("filter", `none${IMPORTANT_PATTERN}`);
-const MIX_BLEND_NORMAL_DECLARATION = declarationPattern("mix-blend-mode", `normal${IMPORTANT_PATTERN}`);
-const BACKDROP_NONE_DECLARATION = declarationPattern("backdrop-filter", `none${IMPORTANT_PATTERN}`);
-const WEBKIT_BACKDROP_NONE_DECLARATION = declarationPattern("-webkit-backdrop-filter", `none${IMPORTANT_PATTERN}`);
-const LIGHT_FIXED_CHROME_DECLARATION = declarationPattern(
-  "background",
-  `rgba\\([ \\t]*249[ \\t]*,[ \\t]*250[ \\t]*,[ \\t]*246[ \\t]*,[ \\t]*0?\\.98[ \\t]*\\)${IMPORTANT_PATTERN}`,
+function declarationContract(value) {
+  const canonical = canonicalCssTokens(value);
+  return {
+    canonical,
+    matches: (rule) => ruleDeclarations(rule).includes(canonical),
+  };
+}
+
+function assertDeclaration(rule, contract, label) {
+  assert.ok(contract.matches(rule), `${label} must include ${contract.canonical}`);
+}
+
+const FILTER_NONE_DECLARATION = declarationContract("filter: none !important;");
+const MIX_BLEND_NORMAL_DECLARATION = declarationContract("mix-blend-mode: normal !important;");
+const BACKDROP_NONE_DECLARATION = declarationContract("backdrop-filter: none !important;");
+const WEBKIT_BACKDROP_NONE_DECLARATION = declarationContract("-webkit-backdrop-filter: none !important;");
+const LIGHT_FIXED_CHROME_DECLARATION = declarationContract("background: rgba(249, 250, 246, 0.98) !important;");
+const LIGHT_DRAWER_DECLARATION = declarationContract("background: #f8f9f4 !important;");
+const DARK_MATERIAL_DECLARATION = declarationContract("background: rgba(24, 30, 23, 0.99) !important;");
+const LIGHT_REPEATED_SHADOW_DECLARATION = declarationContract(
+  "box-shadow: 0 1px 2px rgba(44, 55, 40, 0.08), inset 0 1px rgba(255, 255, 255, 0.66) !important;",
 );
-const LIGHT_DRAWER_DECLARATION = declarationPattern("background", `#f8f9f4${IMPORTANT_PATTERN}`);
-const DARK_MATERIAL_DECLARATION = declarationPattern(
-  "background",
-  `rgba\\([ \\t]*24[ \\t]*,[ \\t]*30[ \\t]*,[ \\t]*23[ \\t]*,[ \\t]*0?\\.99[ \\t]*\\)${IMPORTANT_PATTERN}`,
+const DARK_REPEATED_SHADOW_DECLARATION = declarationContract(
+  "box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.08) !important;",
 );
-const LIGHT_REPEATED_SHADOW_DECLARATION = declarationPattern(
-  "box-shadow",
-  `0[ \\t]+1px[ \\t]+2px[ \\t]+rgba\\([ \\t]*44[ \\t]*,[ \\t]*55[ \\t]*,[ \\t]*40[ \\t]*,[ \\t]*0?\\.08[ \\t]*\\)[ \\t]*,[ \\t]*inset[ \\t]+0[ \\t]+1px[ \\t]+rgba\\([ \\t]*255[ \\t]*,[ \\t]*255[ \\t]*,[ \\t]*255[ \\t]*,[ \\t]*0?\\.66[ \\t]*\\)${IMPORTANT_PATTERN}`,
-);
-const DARK_REPEATED_SHADOW_DECLARATION = declarationPattern(
-  "box-shadow",
-  `0[ \\t]+1px[ \\t]+2px[ \\t]+rgba\\([ \\t]*0[ \\t]*,[ \\t]*0[ \\t]*,[ \\t]*0[ \\t]*,[ \\t]*(0?\\.\\d+)[ \\t]*\\)[ \\t]*,[ \\t]*inset[ \\t]+0[ \\t]+1px[ \\t]+rgba\\([ \\t]*255[ \\t]*,[ \\t]*255[ \\t]*,[ \\t]*255[ \\t]*,[ \\t]*(0?\\.\\d+)[ \\t]*\\)${IMPORTANT_PATTERN}`,
-);
-const CONTENT_VISIBILITY_AUTO_DECLARATION = declarationPattern("content-visibility", "auto");
-const CONTENT_VISIBILITY_PROPERTY = /^[ \t]*content-visibility[ \t]*:/m;
-const CONTAIN_PAINT_STYLE_DECLARATION = declarationPattern("contain", "paint[ \\t]+style");
-const SHADOW_NONE_DECLARATION = declarationPattern("box-shadow", `none${IMPORTANT_PATTERN}`);
-const OVERSCROLL_CONTAIN_DECLARATION = declarationPattern("overscroll-behavior", "contain");
-const WEBKIT_SCROLL_TOUCH_DECLARATION = declarationPattern("-webkit-overflow-scrolling", "touch");
+const CONTENT_VISIBILITY_AUTO_DECLARATION = declarationContract("content-visibility: auto;");
+const CONTAIN_PAINT_STYLE_DECLARATION = declarationContract("contain: paint style;");
+const SHADOW_NONE_DECLARATION = declarationContract("box-shadow: none !important;");
+const OVERSCROLL_CONTAIN_DECLARATION = declarationContract("overscroll-behavior: contain;");
+const WEBKIT_SCROLL_TOUCH_DECLARATION = declarationContract("-webkit-overflow-scrolling: touch;");
 
 function intrinsicSizeDeclaration(size) {
-  const valuePattern = size.split(/\s+/).map(escapeRegExp).join("[ \\t]+");
-  return declarationPattern("contain-intrinsic-size", valuePattern);
+  return declarationContract(`contain-intrinsic-size: ${size};`);
 }
 
 function matchingBraceIndex(css, openBraceIndex) {
@@ -174,44 +151,40 @@ function matchingBraceIndex(css, openBraceIndex) {
   assert.fail("CSS block is missing a closing brace");
 }
 
-function ruleContainingSelector(css, selector, options = {}) {
+function styleRulesInV82(css, options = {}) {
   const markerIndex = css.lastIndexOf(V82_MARKER);
   assert.ok(markerIndex >= 0, "V82 performance layer is missing");
 
   const after = Math.max(options.after ?? markerIndex, markerIndex);
   const before = options.before ?? css.length;
-  let selectorIndex = css.indexOf(selector, after);
+  const rules = [];
+  let cursor = after;
 
-  while (selectorIndex >= 0 && selectorIndex < before) {
-    const openBraceIndex = css.indexOf("{", selectorIndex);
-    const closeBeforeOpen = css.indexOf("}", selectorIndex);
-
-    if (openBraceIndex < 0 || openBraceIndex >= before) return null;
-    if (closeBeforeOpen >= 0 && closeBeforeOpen < openBraceIndex) {
-      selectorIndex = css.indexOf(selector, selectorIndex + selector.length);
-      continue;
-    }
-
+  while (cursor < before) {
+    const openBraceIndex = css.indexOf("{", cursor);
+    if (openBraceIndex < 0 || openBraceIndex >= before) break;
     const closeBraceIndex = matchingBraceIndex(css, openBraceIndex);
-    if (closeBraceIndex >= before) return null;
-
     const previousBoundary = Math.max(
-      css.lastIndexOf("{", selectorIndex),
-      css.lastIndexOf("}", selectorIndex),
+      css.lastIndexOf("{", openBraceIndex - 1),
+      css.lastIndexOf("}", openBraceIndex - 1),
     );
-    const rule = css.slice(previousBoundary + 1, closeBraceIndex + 1).trim();
+    const prelude = css.slice(previousBoundary + 1, openBraceIndex).trim();
 
-    if (ruleHasSelector(rule, selector) && ruleMatchesQualification(rule, options.qualification)) return rule;
-    selectorIndex = css.indexOf(selector, selectorIndex + selector.length);
+    if (prelude && !prelude.startsWith("@") && closeBraceIndex < before) {
+      rules.push(css.slice(previousBoundary + 1, closeBraceIndex + 1).trim());
+    }
+    cursor = openBraceIndex + 1;
   }
 
-  return null;
+  return rules;
 }
 
-function requiredRuleContainingSelector(css, selector, options = {}) {
-  const rule = ruleContainingSelector(css, selector, options);
-  assert.ok(rule, `required V82 selector ${selector} is missing from its rule`);
-  return rule;
+function requiredRuleMatching(css, options = {}) {
+  const label = options.label ?? "V82 rule";
+  const matches = styleRulesInV82(css, options).filter((rule) =>
+    ruleMatchesQualification(rule, options.qualification));
+  assert.equal(matches.length, 1, `${label} must resolve to exactly one rule`);
+  return matches[0];
 }
 
 function ruleMatchesQualification(rule, qualification) {
@@ -224,65 +197,82 @@ function ruleMatchesQualification(rule, qualification) {
   assert.fail("rule qualification must be a RegExp or predicate");
 }
 
-function selectorPattern(selector, flags = "") {
-  return new RegExp(
-    `(^|[,(])(\\s*)(${escapeRegExp(selector)})(?=\\s*(?:,|\\)|$))`,
-    flags,
-  );
-}
-
-function ruleHasSelector(rule, selector) {
+function topLevelSelectorEntries(rule) {
   const openBraceIndex = rule.indexOf("{");
   assert.ok(openBraceIndex >= 0, "CSS rule is missing an opening brace");
-  const prelude = rule.slice(0, openBraceIndex).trim();
-  return selectorPattern(selector).test(prelude);
-}
-
-function assertRuleHasSelector(rule, selector, label = "rule") {
-  assert.ok(ruleHasSelector(rule, selector), `${label} must include selector ${selector}`);
-}
-
-function assertRuleHasSelectors(rule, selectors, label) {
-  for (const selector of selectors) {
-    assertRuleHasSelector(rule, selector, label);
-  }
-}
-
-function mutateRuleSelector(css, options) {
-  const rule = requiredRuleContainingSelector(css, options.ruleSelector, {
-    qualification: options.qualification,
-  });
-  const openBraceIndex = rule.indexOf("{");
   const prelude = rule.slice(0, openBraceIndex);
-  const matches = [...prelude.matchAll(selectorPattern(options.targetSelector, "g"))];
-  assert.equal(matches.length, 1, `expected one exact ${options.targetSelector} in the target rule`);
+  const entries = [];
+  let depth = 0;
+  let entryStart = 0;
 
-  const match = matches[0];
-  const selectorStart = match.index + match[1].length + match[2].length;
-  const selectorEnd = selectorStart + options.targetSelector.length;
-  let mutatedPrelude;
+  for (let index = 0; index < prelude.length; index += 1) {
+    if (prelude[index] === "(") depth += 1;
+    if (prelude[index] === ")") depth -= 1;
+    assert.ok(depth >= 0, "selector prelude has an unmatched closing parenthesis");
 
-  if (options.replacement !== undefined) {
-    mutatedPrelude = prelude.slice(0, selectorStart) + options.replacement + prelude.slice(selectorEnd);
-  } else {
-    let rightBoundaryIndex = selectorEnd;
-    while (/\s/.test(prelude[rightBoundaryIndex] ?? "")) rightBoundaryIndex += 1;
-
-    if (prelude[rightBoundaryIndex] === ",") {
-      mutatedPrelude = prelude.slice(0, selectorStart) + prelude.slice(rightBoundaryIndex + 1);
-    } else if (match[1] === ",") {
-      mutatedPrelude = prelude.slice(0, match.index) + prelude.slice(rightBoundaryIndex);
-    } else {
-      mutatedPrelude = prelude.slice(0, selectorStart) + prelude.slice(rightBoundaryIndex);
+    if (prelude[index] === "," && depth === 0) {
+      entries.push(prelude.slice(entryStart, index).trim());
+      entryStart = index + 1;
     }
   }
 
-  const mutatedRule = mutatedPrelude + rule.slice(openBraceIndex);
+  assert.equal(depth, 0, "selector prelude has an unmatched opening parenthesis");
+  entries.push(prelude.slice(entryStart).trim());
+  return entries.filter(Boolean);
+}
+
+function canonicalSelector(selector) {
+  return selector
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/\(\s+/g, "(")
+    .replace(/\s+\)/g, ")")
+    .replace(/\s*,\s*/g, ",");
+}
+
+function canonicalSelectorEntries(rule) {
+  return topLevelSelectorEntries(rule).map(canonicalSelector);
+}
+
+function assertRuleSelectors(rule, expectedSelectors, label) {
+  const actual = canonicalSelectorEntries(rule).sort();
+  const expected = expectedSelectors.map(canonicalSelector).sort();
+
+  for (const selector of expected) {
+    assert.ok(actual.includes(selector), `${label} must include selector ${selector}`);
+  }
+  assert.deepEqual(actual, expected, `${label} must exactly match its selector contract`);
+}
+
+function replaceSelectorEntryInRule(rule, targetSelector, replacementSelector) {
+  const openBraceIndex = rule.indexOf("{");
+  const entries = topLevelSelectorEntries(rule);
+  const target = canonicalSelector(targetSelector);
+  const matches = entries
+    .map(canonicalSelector)
+    .map((selector, index) => selector === target ? index : -1)
+    .filter((index) => index >= 0);
+  assert.equal(matches.length, 1, `expected one complete selector entry ${target}`);
+
+  entries[matches[0]] = replacementSelector;
+  return `${entries.join(",\n")} ${rule.slice(openBraceIndex)}`;
+}
+
+function replaceV82Rule(css, rule, replacementRule) {
   const markerIndex = css.lastIndexOf(V82_MARKER);
   const ruleIndex = css.indexOf(rule, markerIndex);
   assert.ok(ruleIndex >= markerIndex, "target V82 rule is missing from the source");
+  return css.slice(0, ruleIndex) + replacementRule + css.slice(ruleIndex + rule.length);
+}
 
-  return css.slice(0, ruleIndex) + mutatedRule + css.slice(ruleIndex + rule.length);
+function mutateRuleSelectorEntry(css, options) {
+  const rule = requiredRuleMatching(css, options);
+  const mutatedRule = replaceSelectorEntryInRule(
+    rule,
+    options.targetSelector,
+    options.replacementSelector,
+  );
+  return replaceV82Rule(css, rule, mutatedRule);
 }
 
 function v82Bounds(css) {
@@ -300,51 +290,80 @@ function v82Bounds(css) {
   };
 }
 
-function validateRepeatedContainmentRule(rule) {
-  for (const selector of repeatedUnitSelectors) {
-    assertRuleHasSelector(rule, selector, "repeated containment rule");
+function validateRuleContract(css, options) {
+  const rule = requiredRuleMatching(css, {
+    after: options.after,
+    before: options.before,
+    qualification: options.declarations[0].matches,
+    label: options.label,
+  });
+  assertRuleSelectors(rule, options.selectors, options.label);
+  for (const declaration of options.declarations) {
+    assertDeclaration(rule, declaration, options.label);
   }
-  assert.match(rule, CONTENT_VISIBILITY_AUTO_DECLARATION);
-  assert.match(rule, CONTAIN_PAINT_STYLE_DECLARATION);
+  return rule;
+}
+
+function validateRepeatedContainmentRule(rule) {
+  assertRuleSelectors(rule, [REPEATED_CONTAINMENT_SELECTOR], "repeated containment rule");
+  assertDeclaration(rule, CONTENT_VISIBILITY_AUTO_DECLARATION, "repeated containment rule");
+  assertDeclaration(rule, CONTAIN_PAINT_STYLE_DECLARATION, "repeated containment rule");
 }
 
 function validateCompositingReset(css) {
-  const rule = requiredRuleContainingSelector(css, compositingResetSelectors[0], {
-    qualification: FILTER_NONE_DECLARATION,
+  return validateRuleContract(css, {
+    label: "compositing reset rule",
+    selectors: COMPOSITING_SELECTORS,
+    declarations: [
+      FILTER_NONE_DECLARATION,
+      MIX_BLEND_NORMAL_DECLARATION,
+      BACKDROP_NONE_DECLARATION,
+      WEBKIT_BACKDROP_NONE_DECLARATION,
+    ],
   });
-
-  assertRuleHasSelectors(rule, compositingResetSelectors, "compositing reset rule");
-  assert.match(rule, FILTER_NONE_DECLARATION);
-  assert.match(rule, MIX_BLEND_NORMAL_DECLARATION);
-  assert.match(rule, BACKDROP_NONE_DECLARATION);
-  assert.match(rule, WEBKIT_BACKDROP_NONE_DECLARATION);
 }
 
 function validateLightFixedChromeMaterial(css) {
-  const rule = requiredRuleContainingSelector(css, lightFixedChromeMaterialSelectors[0], {
-    qualification: LIGHT_FIXED_CHROME_DECLARATION,
+  return validateRuleContract(css, {
+    label: "light fixed chrome material rule",
+    selectors: LIGHT_FIXED_CHROME_SELECTORS,
+    declarations: [LIGHT_FIXED_CHROME_DECLARATION],
   });
-
-  assertRuleHasSelectors(rule, lightFixedChromeMaterialSelectors, "light fixed chrome material rule");
-  assert.match(rule, LIGHT_FIXED_CHROME_DECLARATION);
 }
 
 function validateLightDrawerMaterial(css) {
-  const rule = requiredRuleContainingSelector(css, lightDrawerMaterialSelectors[0], {
-    qualification: LIGHT_DRAWER_DECLARATION,
+  return validateRuleContract(css, {
+    label: "light drawer material rule",
+    selectors: LIGHT_DRAWER_SELECTORS,
+    declarations: [LIGHT_DRAWER_DECLARATION],
   });
-
-  assertRuleHasSelectors(rule, lightDrawerMaterialSelectors, "light drawer material rule");
-  assert.match(rule, LIGHT_DRAWER_DECLARATION);
 }
 
 function validateDarkFixedDrawerMaterial(css) {
-  const rule = requiredRuleContainingSelector(css, darkFixedDrawerMaterialSelectors[0], {
-    qualification: DARK_MATERIAL_DECLARATION,
+  return validateRuleContract(css, {
+    label: "dark fixed and drawer material rule",
+    selectors: DARK_FIXED_DRAWER_SELECTORS,
+    declarations: [DARK_MATERIAL_DECLARATION],
   });
+}
 
-  assertRuleHasSelectors(rule, darkFixedDrawerMaterialSelectors, "dark fixed and drawer material rule");
-  assert.match(rule, DARK_MATERIAL_DECLARATION);
+function validateLightRepeatedShadow(css) {
+  return validateRuleContract(css, {
+    label: "repeated surface shadow rule",
+    selectors: [REPEATED_SURFACE_SELECTOR],
+    declarations: [LIGHT_REPEATED_SHADOW_DECLARATION],
+  });
+}
+
+function validateMobileShadowReset(css) {
+  const { mobileStart, mobileEnd } = v82Bounds(css);
+  return validateRuleContract(css, {
+    after: mobileStart,
+    before: mobileEnd,
+    label: "mobile shadow reset rule",
+    selectors: MOBILE_SHADOW_SELECTORS,
+    declarations: [SHADOW_NONE_DECLARATION],
+  });
 }
 
 test("Supabase does not block the initial document parse", () => {
@@ -387,14 +406,7 @@ test("final performance layer wins after the mobile responsive layer", () => {
 
 test("final performance layer scopes compositing resets to targeted surfaces", () => {
   validateCompositingReset(organicCss);
-
-  const repeatedShadowRule = requiredRuleContainingSelector(organicCss, ".dashboard .kpi", {
-    qualification: LIGHT_REPEATED_SHADOW_DECLARATION,
-  });
-  for (const selector of repeatedSurfaceSelectors) {
-    assertRuleHasSelector(repeatedShadowRule, selector, "repeated surface shadow rule");
-  }
-  assert.match(repeatedShadowRule, LIGHT_REPEATED_SHADOW_DECLARATION);
+  validateLightRepeatedShadow(organicCss);
 });
 
 test("final performance layer scopes fixed and drawer materials to all targets", () => {
@@ -404,10 +416,11 @@ test("final performance layer scopes fixed and drawer materials to all targets",
 });
 
 test("compositing validator rejects a missing target in the full V82 source", () => {
-  const mutatedCss = mutateRuleSelector(organicCss, {
-    ruleSelector: compositingResetSelectors[0],
-    targetSelector: ".card-form",
-    qualification: FILTER_NONE_DECLARATION,
+  const mutatedCss = mutateRuleSelectorEntry(organicCss, {
+    targetSelector: COMPOSITING_GROUP_SELECTOR,
+    replacementSelector: COMPOSITING_GROUP_SELECTOR.replace(", .card-form", ""),
+    qualification: FILTER_NONE_DECLARATION.matches,
+    label: "compositing reset rule",
   });
   const originalCardFormCount = organicCss.match(/\.card-form/g)?.length ?? 0;
   const mutatedCardFormCount = mutatedCss.match(/\.card-form/g)?.length ?? 0;
@@ -418,16 +431,19 @@ test("compositing validator rejects a missing target in the full V82 source", ()
 
   assert.throws(
     () => validateCompositingReset(mutatedCss),
-    /compositing reset rule must include selector \.card-form/,
+    /compositing reset rule/,
   );
 });
 
 test("compositing validator rejects a descendant-prefixed target in the full V82 source", () => {
-  const mutatedCss = mutateRuleSelector(organicCss, {
-    ruleSelector: compositingResetSelectors[0],
-    targetSelector: ".utility-drawer",
-    replacement: ".narrow-scope .utility-drawer",
-    qualification: FILTER_NONE_DECLARATION,
+  const mutatedCss = mutateRuleSelectorEntry(organicCss, {
+    targetSelector: COMPOSITING_GROUP_SELECTOR,
+    replacementSelector: COMPOSITING_GROUP_SELECTOR.replace(
+      ".utility-drawer",
+      ".narrow-scope .utility-drawer",
+    ),
+    qualification: FILTER_NONE_DECLARATION.matches,
+    label: "compositing reset rule",
   });
   assert.equal(
     mutatedCss.match(/\.narrow-scope \.utility-drawer/g)?.length ?? 0,
@@ -439,34 +455,71 @@ test("compositing validator rejects a descendant-prefixed target in the full V82
 
   assert.throws(
     () => validateCompositingReset(mutatedCss),
-    /compositing reset rule must include selector \.utility-drawer/,
+    /compositing reset rule/,
   );
 });
 
 test("compositing validator accepts declaration-only formatting changes", () => {
-  const compositingRule = requiredRuleContainingSelector(organicCss, compositingResetSelectors[0], {
-    qualification: FILTER_NONE_DECLARATION,
+  const compositingRule = requiredRuleMatching(organicCss, {
+    qualification: FILTER_NONE_DECLARATION.matches,
+    label: "compositing reset rule",
   });
   const reformattedRule = compositingRule.replace(
-    FILTER_NONE_DECLARATION,
-    "      filter :  none   !important ;",
+    "  filter: none !important;",
+    "  filter :  none   !important ;",
   );
   assert.notEqual(reformattedRule, compositingRule, "test mutation must reformat the filter declaration");
 
-  const reformattedCss = organicCss.replace(compositingRule, reformattedRule);
+  const reformattedCss = replaceV82Rule(organicCss, compositingRule, reformattedRule);
   assert.doesNotThrow(() => validateCompositingReset(reformattedCss));
 });
 
+test("mobile shadow validator rejects a narrowed outer scope", () => {
+  const { mobileStart, mobileEnd } = v82Bounds(organicCss);
+  const mutatedCss = mutateRuleSelectorEntry(organicCss, {
+    after: mobileStart,
+    before: mobileEnd,
+    targetSelector: MOBILE_PRIMARY_SHADOW_SELECTOR,
+    replacementSelector: MOBILE_PRIMARY_SHADOW_SELECTOR.replace(UI_SCOPE, ".narrow-scope"),
+    qualification: SHADOW_NONE_DECLARATION.matches,
+    label: "mobile shadow reset rule",
+  });
+  assert.throws(
+    () => validateMobileShadowReset(mutatedCss),
+    /mobile shadow reset rule/,
+  );
+});
+
+test("repeated shadow validator accepts multiline declaration formatting", () => {
+  const shadowRule = requiredRuleMatching(organicCss, {
+    qualification: LIGHT_REPEATED_SHADOW_DECLARATION.matches,
+    label: "repeated surface shadow rule",
+  });
+  const reformattedRule = shadowRule.replace(
+    "  box-shadow: 0 1px 2px rgba(44, 55, 40, 0.08), inset 0 1px rgba(255, 255, 255, 0.66) !important;",
+    [
+      "  box-shadow:",
+      "    0 1px 2px rgba(44, 55, 40, 0.08),",
+      "    inset 0 1px rgba(255, 255, 255, 0.66) !important;",
+    ].join("\n"),
+  );
+  assert.notEqual(reformattedRule, shadowRule, "test mutation must split the shadow declaration across lines");
+
+  const reformattedCss = replaceV82Rule(organicCss, shadowRule, reformattedRule);
+  assert.doesNotThrow(() => validateLightRepeatedShadow(reformattedCss));
+});
+
 test("dark repeated surfaces use a restrained theme-specific shadow", () => {
-  const darkShadowRule = requiredRuleContainingSelector(organicCss, ".dashboard .kpi", {
-    qualification: DARK_REPEATED_SHADOW_DECLARATION,
+  const darkShadowRule = requiredRuleMatching(organicCss, {
+    qualification: DARK_REPEATED_SHADOW_DECLARATION.matches,
+    label: "dark repeated surface shadow rule",
   });
 
-  for (const selector of repeatedSurfaceSelectors) {
-    assertRuleHasSelector(darkShadowRule, selector, "dark repeated surface shadow rule");
-  }
-  assert.match(darkShadowRule, /\[data-theme="dark"\]/);
-  const shadow = darkShadowRule.match(DARK_REPEATED_SHADOW_DECLARATION);
+  assertRuleSelectors(darkShadowRule, [DARK_REPEATED_SURFACE_SELECTOR], "dark repeated surface shadow rule");
+  assertDeclaration(darkShadowRule, DARK_REPEATED_SHADOW_DECLARATION, "dark repeated surface shadow rule");
+  const shadow = DARK_REPEATED_SHADOW_DECLARATION.canonical.match(
+    /box-shadow:0 1px 2px rgba\(0,0,0,(0?\.\d+)\),inset 0 1px rgba\(255,255,255,(0?\.\d+)\)!important;/,
+  );
   assert.ok(shadow, "dark repeated surfaces need a small black outer shadow and white inset");
   assert.ok(Number(shadow[1]) > 0, "dark outer shadow must have visible black alpha");
   assert.ok(Number(shadow[2]) <= 0.1, "dark inset white alpha must not exceed 0.10");
@@ -474,9 +527,10 @@ test("dark repeated surfaces use a restrained theme-specific shadow", () => {
 
 test("repeated data units use component-specific desktop intrinsic sizes", () => {
   const { markerIndex, mobileStart } = v82Bounds(organicCss);
-  const containmentRule = requiredRuleContainingSelector(organicCss, ".card-row-wide", {
+  const containmentRule = requiredRuleMatching(organicCss, {
     before: mobileStart,
-    qualification: CONTENT_VISIBILITY_AUTO_DECLARATION,
+    qualification: CONTENT_VISIBILITY_AUTO_DECLARATION.matches,
+    label: "repeated containment rule",
   });
 
   validateRepeatedContainmentRule(containmentRule);
@@ -492,27 +546,24 @@ test("repeated data units use component-specific desktop intrinsic sizes", () =>
   for (const [selector, size] of desktopSizes) {
     const scopedSelector = `${UI_SCOPE} ${selector}`;
     const sizeDeclaration = intrinsicSizeDeclaration(size);
-    const sizeRule = requiredRuleContainingSelector(organicCss, scopedSelector, {
+    const sizeRule = requiredRuleMatching(organicCss, {
       after: markerIndex,
       before: mobileStart,
-      qualification: sizeDeclaration,
+      qualification: sizeDeclaration.matches,
+      label: `${selector} desktop intrinsic-size rule`,
     });
-    assertRuleHasSelector(sizeRule, scopedSelector, "desktop intrinsic-size rule");
-    assert.match(sizeRule, sizeDeclaration);
-    for (const otherSelector of repeatedUnitSelectors.filter((item) => item !== selector)) {
-      assert.equal(
-        ruleHasSelector(sizeRule, `${UI_SCOPE} ${otherSelector}`),
-        false,
-        `${selector} needs a component-specific desktop size rule`,
-      );
-    }
+    assertRuleSelectors(sizeRule, [scopedSelector], `${selector} desktop intrinsic-size rule`);
+    assertDeclaration(sizeRule, sizeDeclaration, `${selector} desktop intrinsic-size rule`);
   }
 
-  const mutatedRule = containmentRule.replace("  .loyalty-card,\n", "");
-  assert.notEqual(mutatedRule, containmentRule, "test mutation must remove the loyalty selector");
+  const mutatedRule = replaceSelectorEntryInRule(
+    containmentRule,
+    REPEATED_CONTAINMENT_SELECTOR,
+    REPEATED_CONTAINMENT_SELECTOR.replace(", .loyalty-card", ""),
+  );
   assert.throws(
     () => validateRepeatedContainmentRule(mutatedRule),
-    /repeated containment rule must include selector \.loyalty-card/,
+    /repeated containment rule/,
   );
 });
 
@@ -528,72 +579,50 @@ test("repeated data units use component-specific mobile intrinsic sizes", () => 
   for (const [selector, size] of mobileSizes) {
     const scopedSelector = `${UI_SCOPE} ${selector}`;
     const sizeDeclaration = intrinsicSizeDeclaration(size);
-    const sizeRule = requiredRuleContainingSelector(organicCss, scopedSelector, {
+    const sizeRule = requiredRuleMatching(organicCss, {
       after: mobileStart,
       before: mobileEnd,
-      qualification: sizeDeclaration,
+      qualification: sizeDeclaration.matches,
+      label: `${selector} mobile intrinsic-size rule`,
     });
-    assertRuleHasSelector(sizeRule, scopedSelector, "mobile intrinsic-size rule");
-    assert.match(sizeRule, sizeDeclaration);
-    for (const otherSelector of repeatedUnitSelectors.filter((item) => item !== selector)) {
-      assert.equal(
-        ruleHasSelector(sizeRule, `${UI_SCOPE} ${otherSelector}`),
-        false,
-        `${selector} needs a component-specific mobile size rule`,
-      );
-    }
+    assertRuleSelectors(sizeRule, [scopedSelector], `${selector} mobile intrinsic-size rule`);
+    assertDeclaration(sizeRule, sizeDeclaration, `${selector} mobile intrinsic-size rule`);
   }
 });
 
 test("fee record containment is limited to the mobile grid layout", () => {
   const { markerIndex, mobileStart, mobileEnd } = v82Bounds(organicCss);
   const recordSelector = `${UI_SCOPE} #recordsBody tr`;
-  const desktopRecordRule = ruleContainingSelector(organicCss, recordSelector, {
-    after: markerIndex,
-    before: mobileStart,
-    qualification: CONTENT_VISIBILITY_PROPERTY,
-  });
+  const desktopRecordRule = styleRulesInV82(organicCss, { after: markerIndex, before: mobileStart })
+    .find((rule) =>
+      canonicalSelectorEntries(rule).includes(canonicalSelector(recordSelector)) &&
+      ruleDeclarations(rule).some((declaration) => declaration.startsWith("content-visibility:")));
 
-  assert.equal(desktopRecordRule, null, "native desktop table rows must not receive content visibility");
+  assert.equal(desktopRecordRule, undefined, "native desktop table rows must not receive content visibility");
 
-  const mobileRecordRule = requiredRuleContainingSelector(organicCss, recordSelector, {
+  const mobileRecordRule = requiredRuleMatching(organicCss, {
     after: mobileStart,
     before: mobileEnd,
-    qualification: CONTENT_VISIBILITY_AUTO_DECLARATION,
+    qualification: CONTENT_VISIBILITY_AUTO_DECLARATION.matches,
+    label: "mobile record containment rule",
   });
-  assertRuleHasSelector(mobileRecordRule, recordSelector, "mobile record containment rule");
-  assert.match(mobileRecordRule, CONTENT_VISIBILITY_AUTO_DECLARATION);
-  assert.match(mobileRecordRule, CONTAIN_PAINT_STYLE_DECLARATION);
-  assert.match(mobileRecordRule, intrinsicSizeDeclaration("auto 500px"));
+  assertRuleSelectors(mobileRecordRule, [recordSelector], "mobile record containment rule");
+  assertDeclaration(mobileRecordRule, CONTENT_VISIBILITY_AUTO_DECLARATION, "mobile record containment rule");
+  assertDeclaration(mobileRecordRule, CONTAIN_PAINT_STYLE_DECLARATION, "mobile record containment rule");
+  assertDeclaration(mobileRecordRule, intrinsicSizeDeclaration("auto 500px"), "mobile record containment rule");
 });
 
 test("mobile fixed navigation and full-viewport drawers remove shadows together", () => {
-  const { mobileStart, mobileEnd } = v82Bounds(organicCss);
-  const shadowResetRule = requiredRuleContainingSelector(organicCss, ".app-header.is-compact", {
-    after: mobileStart,
-    before: mobileEnd,
-    qualification: SHADOW_NONE_DECLARATION,
-  });
-
-  assertRuleHasSelectors(shadowResetRule, mobileShadowResetSelectors, "mobile shadow reset rule");
-  assert.match(shadowResetRule, SHADOW_NONE_DECLARATION);
+  validateMobileShadowReset(organicCss);
 });
 
 test("drawer bodies keep isolated momentum scrolling", () => {
-  const scrollRule = requiredRuleContainingSelector(organicCss, ".card-form-body", {
-    qualification: OVERSCROLL_CONTAIN_DECLARATION,
+  const scrollRule = requiredRuleMatching(organicCss, {
+    qualification: OVERSCROLL_CONTAIN_DECLARATION.matches,
+    label: "drawer scrolling rule",
   });
 
-  for (const selector of [
-    ".card-form-body",
-    ".bill-form-body",
-    ".loyalty-form-body",
-    ".entry-drawer-body",
-    ".card-summary-table-wrap",
-    ".utility-drawer-body",
-  ]) {
-    assertRuleHasSelector(scrollRule, selector, "drawer scrolling rule");
-  }
-  assert.match(scrollRule, OVERSCROLL_CONTAIN_DECLARATION);
-  assert.match(scrollRule, WEBKIT_SCROLL_TOUCH_DECLARATION);
+  assertRuleSelectors(scrollRule, DRAWER_SCROLL_SELECTORS, "drawer scrolling rule");
+  assertDeclaration(scrollRule, OVERSCROLL_CONTAIN_DECLARATION, "drawer scrolling rule");
+  assertDeclaration(scrollRule, WEBKIT_SCROLL_TOUCH_DECLARATION, "drawer scrolling rule");
 });
