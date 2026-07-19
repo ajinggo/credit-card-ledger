@@ -131,6 +131,7 @@ const CONTAIN_PAINT_STYLE_DECLARATION = declarationContract("contain: paint styl
 const SHADOW_NONE_DECLARATION = declarationContract("box-shadow: none !important;");
 const OVERSCROLL_CONTAIN_DECLARATION = declarationContract("overscroll-behavior: contain;");
 const WEBKIT_SCROLL_TOUCH_DECLARATION = declarationContract("-webkit-overflow-scrolling: touch;");
+const ROOT_SCROLL_AUTO_DECLARATION = declarationContract("scroll-behavior: auto !important;");
 
 function intrinsicSizeDeclaration(size) {
   return declarationContract(`contain-intrinsic-size: ${size};`);
@@ -149,6 +150,30 @@ function matchingBraceIndex(css, openBraceIndex) {
   }
 
   assert.fail("CSS block is missing a closing brace");
+}
+
+function namedFunctionBody(source, functionName) {
+  const signature = new RegExp(`\\bfunction\\s+${functionName}\\s*\\([^)]*\\)\\s*\\{`);
+  const match = signature.exec(source);
+  assert.ok(match, `${functionName} function is missing`);
+
+  const openBraceIndex = source.indexOf("{", match.index);
+  const closeBraceIndex = matchingBraceIndex(source, openBraceIndex);
+  return source.slice(openBraceIndex + 1, closeBraceIndex);
+}
+
+function tagHasAttribute(tag, attribute, expectedValue) {
+  const attributes = tag.matchAll(/\s+([^\s=/>]+)\s*=\s*(["'])([\s\S]*?)\2/g);
+  return [...attributes].some(([, name, , value]) =>
+    name.toLowerCase() === attribute.toLowerCase() && value === expectedValue);
+}
+
+function assertTagWithAttributes(html, tagName, attributes) {
+  const uncommentedHtml = html.replace(/<!--[\s\S]*?-->/g, "");
+  const tags = uncommentedHtml.match(new RegExp(`<${tagName}\\b[^>]*>`, "gi")) ?? [];
+  const match = tags.find((tag) => Object.entries(attributes)
+    .every(([attribute, value]) => tagHasAttribute(tag, attribute, value)));
+  assert.ok(match, `${tagName} tag must load ${Object.values(attributes).join(" with ")}`);
 }
 
 function styleRulesInV82(css, options = {}) {
@@ -200,7 +225,7 @@ function ruleMatchesQualification(rule, qualification) {
 function topLevelSelectorEntries(rule) {
   const openBraceIndex = rule.indexOf("{");
   assert.ok(openBraceIndex >= 0, "CSS rule is missing an opening brace");
-  const prelude = rule.slice(0, openBraceIndex);
+  const prelude = rule.slice(0, openBraceIndex).replace(/\/\*[\s\S]*?\*\//g, "");
   const entries = [];
   let depth = 0;
   let entryStart = 0;
@@ -370,6 +395,108 @@ test("Supabase does not block the initial document parse", () => {
   assert.doesNotMatch(indexHtml, /<script[^>]+cdn\.jsdelivr\.net\/npm\/@supabase\/supabase-js/i);
   assert.match(cloudSync, /function loadSupabaseLibrary\(\)/);
   assert.match(cloudSync, /script\.async = true/);
+});
+
+test("view switching resets scroll position immediately", () => {
+  const switchViewBody = namedFunctionBody(appJs, "switchView");
+  assert.match(
+    switchViewBody,
+    /window\s*\.\s*scrollTo\s*\(\s*\{\s*top\s*:\s*0\s*,\s*behavior\s*:\s*(["'])auto\1\s*,?\s*\}\s*\)\s*;?/,
+  );
+});
+
+test("view switching does not use smooth scrolling", () => {
+  const switchViewBody = namedFunctionBody(appJs, "switchView");
+  assert.doesNotMatch(switchViewBody, /behavior\s*:\s*(["'])smooth\1/);
+});
+
+test("V82 overrides root smooth scrolling after the V81 layer", () => {
+  const mobileLayerIndex = organicCss.lastIndexOf("Mobile Responsive V81");
+  const performanceLayerIndex = organicCss.lastIndexOf(V82_MARKER);
+
+  assert.ok(mobileLayerIndex >= 0, "mobile responsive layer is missing");
+  assert.ok(performanceLayerIndex > mobileLayerIndex, "V82 must follow V81 in the cascade");
+
+  const rule = requiredRuleMatching(organicCss, {
+    after: performanceLayerIndex,
+    qualification: ROOT_SCROLL_AUTO_DECLARATION.matches,
+    label: "root scroll behavior rule",
+  });
+  assertRuleSelectors(rule, [UI_SCOPE], "root scroll behavior rule");
+  assertDeclaration(rule, ROOT_SCROLL_AUTO_DECLARATION, "root scroll behavior rule");
+});
+
+test("app exposes the scroll performance v74 build marker", () => {
+  assert.match(appJs, /window\.__pointsLedgerBuild = "scroll-performance-v74";/);
+});
+
+test("index loads the v82 performance stylesheet", () => {
+  assertTagWithAttributes(indexHtml, "link", {
+    rel: "stylesheet",
+    href: "./organic-liquid.css?v=82",
+  });
+});
+
+test("index loads the v74 application script", () => {
+  assertTagWithAttributes(indexHtml, "script", { src: "./app.js?v=74" });
+});
+
+test("asset tag validator accepts harmless HTML formatting changes", () => {
+  assertTagWithAttributes(`
+    <link
+      href = './organic-liquid.css?v=82'
+      media="all"
+      REL = "stylesheet"
+    />
+  `, "link", {
+    rel: "stylesheet",
+    href: "./organic-liquid.css?v=82",
+  });
+  assertTagWithAttributes(`
+    <script
+      defer
+      SRC = './app.js?v=74'
+    ></script>
+  `, "script", { src: "./app.js?v=74" });
+});
+
+test("asset tag validator rejects data attributes in place of real asset attributes", () => {
+  assert.throws(() => assertTagWithAttributes(
+    '<link rel="stylesheet" data-href="./organic-liquid.css?v=82" />',
+    "link",
+    { rel: "stylesheet", href: "./organic-liquid.css?v=82" },
+  ));
+  assert.throws(() => assertTagWithAttributes(
+    '<script data-src="./app.js?v=74"></script>',
+    "script",
+    { src: "./app.js?v=74" },
+  ));
+});
+
+test("asset tag validator rejects target tags inside HTML comments", () => {
+  assert.throws(() => assertTagWithAttributes(
+    '<!-- <link rel="stylesheet" href="./organic-liquid.css?v=82" /> -->',
+    "link",
+    { rel: "stylesheet", href: "./organic-liquid.css?v=82" },
+  ));
+  assert.throws(() => assertTagWithAttributes(
+    '<!-- <script src="./app.js?v=74"></script> -->',
+    "script",
+    { src: "./app.js?v=74" },
+  ));
+});
+
+test("asset tag validator rejects case-changed asset URL paths", () => {
+  assert.throws(() => assertTagWithAttributes(
+    '<link rel="stylesheet" href="./ORGANIC-LIQUID.CSS?v=82" />',
+    "link",
+    { rel: "stylesheet", href: "./organic-liquid.css?v=82" },
+  ));
+  assert.throws(() => assertTagWithAttributes(
+    '<script src="./APP.JS?v=74"></script>',
+    "script",
+    { src: "./app.js?v=74" },
+  ));
 });
 
 test("performance layer disables persistent decorative animation", () => {

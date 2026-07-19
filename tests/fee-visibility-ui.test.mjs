@@ -39,9 +39,9 @@ test("display settings include explicit hidden and responsive styles", () => {
 
 test("visibility model and cache versions are wired before the app", () => {
   const modelIndex = indexHtml.indexOf("fee-visibility-model.js?v=1");
-  const appIndex = indexHtml.indexOf("app.js?v=73");
+  const appIndex = indexHtml.indexOf("app.js?v=74");
   assert.ok(modelIndex > -1 && appIndex > modelIndex);
-  assert.match(indexHtml, /organic-liquid\.css\?v=81/);
+  assert.match(indexHtml, /organic-liquid\.css\?v=82/);
   assert.match(appJs, /const FeeVisibilityModel = window\.FeeVisibilityModel/);
 });
 

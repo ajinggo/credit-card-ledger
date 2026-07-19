@@ -12,7 +12,7 @@ const RECENT_RATES_KEY = "pointsLedger_recent_rates_v1";
 const CARD_SORT_KEY = "pointsLedger_card_sort_v1";
 const FEE_VISIBILITY_KEY = "pointsLedger_fee_visibility_v1";
 const SCHEMA_KEY = "pointsLedger_schema_v3";
-window.__pointsLedgerBuild = "mobile-responsive-v73";
+window.__pointsLedgerBuild = "scroll-performance-v74";
 const CreditAccountModel = window.CreditAccountModel;
 const CardSortModel = window.CardSortModel;
 const FeeVisibilityModel = window.FeeVisibilityModel;
@@ -294,7 +294,7 @@ function switchView(view, focusTab = false) {
     }
   });
 
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 
 $$('[data-view-tab]').forEach((tab, index, tabs) => {

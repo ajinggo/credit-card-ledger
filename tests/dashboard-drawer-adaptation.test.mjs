@@ -53,7 +53,7 @@ test("add-card drawer uses the same bounded shell as the other drawers", () => {
 
 test("desktop fee dashboard uses the approved compact first-screen dimensions", () => {
   assert.notEqual(markerIndex, -1, "the V80 layout layer should exist");
-  assert.match(indexHtml, /organic-liquid\.css\?v=81/);
+  assert.match(indexHtml, /organic-liquid\.css\?v=82/);
   assert.match(layoutLayer, /@media\s*\(min-width:\s*981px\)/);
   assert.match(layoutLayer, /#view-fee-dashboard\.hero[\s\S]*min-height:\s*12\.5rem/);
   assert.match(layoutLayer, /#view-fee-dashboard[\s\S]*\.net-card[\s\S]*min-height:\s*12\.5rem/);

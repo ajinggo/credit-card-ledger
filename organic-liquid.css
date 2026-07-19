@@ -9979,6 +9979,10 @@ html[data-ui="organic-v41"] .entry-drawer-actions .btn-primary {
 }
 
 /* -- Performance Pass V82 -- */
+html[data-ui="organic-v41"] {
+  scroll-behavior: auto !important;
+}
+
 html[data-ui="organic-v41"] body {
   background-attachment: scroll !important;
 }
