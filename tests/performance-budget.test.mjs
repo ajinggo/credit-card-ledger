@@ -37,3 +37,43 @@ test("repeated table and row controls do not create backdrop layers", () => {
   assert.match(performanceLayer, /thead th[\s\S]*\.row-actions button[\s\S]*backdrop-filter:\s*none\s*!important/);
   assert.match(performanceLayer, /\.card-row-actions button[\s\S]*\.loyalty-actions button[\s\S]*-webkit-backdrop-filter:\s*none\s*!important/);
 });
+
+test("final performance layer wins after the mobile responsive layer", () => {
+  const mobileLayerIndex = organicCss.lastIndexOf("Mobile Responsive V81");
+  const performanceLayerIndex = organicCss.lastIndexOf("Performance Pass V82");
+
+  assert.ok(mobileLayerIndex >= 0, "mobile responsive layer is missing");
+  assert.ok(performanceLayerIndex > mobileLayerIndex, "V82 must follow V81 in the cascade");
+});
+
+test("final performance layer removes expensive compositing from scroll surfaces", () => {
+  const performanceLayer = organicCss.slice(organicCss.lastIndexOf("Performance Pass V82"));
+
+  assert.match(performanceLayer, /\.app-header\.is-compact/);
+  assert.match(performanceLayer, /\.toast/);
+  assert.match(performanceLayer, /\.drawer-overlay/);
+  assert.match(performanceLayer, /\.dashboard \.limit-kpi/);
+  assert.match(performanceLayer, /backdrop-filter:\s*none\s*!important/);
+  assert.match(performanceLayer, /-webkit-backdrop-filter:\s*none\s*!important/);
+  assert.match(performanceLayer, /mix-blend-mode:\s*normal\s*!important/);
+  assert.match(performanceLayer, /box-shadow:\s*0 1px 2px rgba\(44, 55, 40, 0\.08\)/);
+  assert.match(performanceLayer, /background:\s*rgba\(249, 250, 246, 0\.98\)\s*!important/);
+  assert.match(performanceLayer, /background:\s*rgba\(24, 30, 23, 0\.99\)\s*!important/);
+});
+
+test("repeated data units defer offscreen painting with stable intrinsic sizes", () => {
+  const performanceLayer = organicCss.slice(organicCss.lastIndexOf("Performance Pass V82"));
+
+  assert.match(performanceLayer, /\.card-row-wide[\s\S]*\.bill-row[\s\S]*\.loyalty-card[\s\S]*content-visibility:\s*auto/);
+  assert.match(performanceLayer, /contain:\s*paint style/);
+  assert.match(performanceLayer, /contain-intrinsic-size:\s*auto 180px/);
+  assert.match(performanceLayer, /#recordsBody tr[\s\S]*contain-intrinsic-size:\s*auto 92px/);
+  assert.match(performanceLayer, /@media \(max-width:\s*760px\)[\s\S]*#recordsBody tr[\s\S]*contain-intrinsic-size:\s*auto 500px/);
+});
+
+test("drawer bodies keep isolated momentum scrolling", () => {
+  const performanceLayer = organicCss.slice(organicCss.lastIndexOf("Performance Pass V82"));
+
+  assert.match(performanceLayer, /\.card-form-body[\s\S]*\.utility-drawer-body[\s\S]*-webkit-overflow-scrolling:\s*touch/);
+  assert.match(performanceLayer, /overscroll-behavior:\s*contain/);
+});

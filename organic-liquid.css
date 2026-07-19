@@ -9977,3 +9977,162 @@ html[data-ui="organic-v41"] .entry-drawer-actions .btn-primary {
     animation: none !important;
   }
 }
+
+/* -- Performance Pass V82 -- */
+html[data-ui="organic-v41"] body {
+  background-attachment: scroll !important;
+}
+
+html[data-ui="organic-v41"] :is(.app-header, .app-header.is-compact),
+html[data-ui="organic-v41"] body.nav-collapsed .app-header,
+html[data-ui="organic-v41"] :is(.app-header, .app-header.is-compact) .section-tabs,
+html[data-ui="organic-v41"] body.nav-collapsed .app-header .section-tabs,
+html[data-ui="organic-v41"] :is(
+  .side-tool-rail,
+  .toast,
+  .stats,
+  .net-card,
+  .hero-graphic,
+  .analytics-chart-block,
+  .card-row-wide,
+  .billing-ledger,
+  .bill-row,
+  .loyalty-card,
+  .record-summary-strip,
+  .table-wrap,
+  .advanced-filters,
+  .display-settings-panel,
+  .drawer-overlay,
+  .modal-backdrop,
+  .card-form,
+  .card-summary-panel,
+  .entry-drawer,
+  .utility-drawer,
+  .drawer-head,
+  .card-form-actions,
+  .entry-drawer-actions,
+  input,
+  select,
+  textarea,
+  .btn-primary,
+  .btn-outline,
+  .btn-ghost,
+  .rate-chip
+),
+html[data-ui="organic-v41"] .dashboard .kpi,
+html[data-ui="organic-v41"] .dashboard .limit-kpi,
+html[data-ui="organic-v41"] :is(.row-actions, .card-row-actions, .loyalty-actions) button {
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-ui="organic-v41"] :is(
+  .dashboard .kpi,
+  .net-card,
+  .hero-graphic,
+  .analytics-chart-block,
+  .card-row-wide,
+  .billing-ledger,
+  .bill-row,
+  .loyalty-card,
+  .record-summary-strip,
+  .table-wrap
+) {
+  box-shadow: 0 1px 2px rgba(44, 55, 40, 0.08), inset 0 1px rgba(255, 255, 255, 0.66) !important;
+}
+
+html[data-ui="organic-v41"] :is(
+  .app-header,
+  .app-header.is-compact,
+  .side-tool-rail,
+  .toast,
+  .display-settings-panel,
+  .card-form,
+  .card-summary-panel,
+  .entry-drawer,
+  .utility-drawer
+) {
+  box-shadow: 0 1px 3px rgba(44, 55, 40, 0.12) !important;
+}
+
+html[data-ui="organic-v41"] :is(.app-header, .app-header.is-compact),
+html[data-ui="organic-v41"] body.nav-collapsed .app-header,
+html[data-ui="organic-v41"] :is(.app-header, .app-header.is-compact) .section-tabs,
+html[data-ui="organic-v41"] body.nav-collapsed .app-header .section-tabs,
+html[data-ui="organic-v41"] :is(.side-tool-rail, .toast, .display-settings-panel) {
+  background: rgba(249, 250, 246, 0.98) !important;
+}
+
+html[data-ui="organic-v41"] :is(
+  .card-form,
+  .card-summary-panel,
+  .entry-drawer,
+  .utility-drawer,
+  .drawer-head,
+  .card-form-actions,
+  .entry-drawer-actions
+) {
+  background: #f8f9f4 !important;
+}
+
+html[data-ui="organic-v41"][data-theme="dark"] :is(.app-header, .app-header.is-compact),
+html[data-ui="organic-v41"][data-theme="dark"] body.nav-collapsed .app-header,
+html[data-ui="organic-v41"][data-theme="dark"] :is(.app-header, .app-header.is-compact) .section-tabs,
+html[data-ui="organic-v41"][data-theme="dark"] body.nav-collapsed .app-header .section-tabs,
+html[data-ui="organic-v41"][data-theme="dark"] :is(
+  .side-tool-rail,
+  .toast,
+  .display-settings-panel,
+  .card-form,
+  .card-summary-panel,
+  .entry-drawer,
+  .utility-drawer,
+  .drawer-head,
+  .card-form-actions,
+  .entry-drawer-actions
+) {
+  background: rgba(24, 30, 23, 0.99) !important;
+}
+
+html[data-ui="organic-v41"] :is(
+  .card-row-wide,
+  .bill-row,
+  .loyalty-card,
+  .analytics-chart-block
+) {
+  content-visibility: auto;
+  contain: paint style;
+  contain-intrinsic-size: auto 180px;
+}
+
+html[data-ui="organic-v41"] #recordsBody tr {
+  content-visibility: auto;
+  contain: paint style;
+  contain-intrinsic-size: auto 92px;
+}
+
+html[data-ui="organic-v41"] :is(
+  .card-form-body,
+  .bill-form-body,
+  .loyalty-form-body,
+  .entry-drawer-body,
+  .card-summary-table-wrap,
+  .utility-drawer-body
+) {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 760px) {
+  html[data-ui="organic-v41"] #recordsBody tr {
+    contain-intrinsic-size: auto 500px;
+  }
+
+  html[data-ui="organic-v41"] :is(.app-header, .app-header.is-compact),
+  html[data-ui="organic-v41"] :is(.app-header, .app-header.is-compact) .section-tabs,
+  html[data-ui="organic-v41"] body.nav-collapsed .app-header .section-tabs {
+    box-shadow: none !important;
+  }
+}
