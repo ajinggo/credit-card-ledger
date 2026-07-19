@@ -10043,6 +10043,21 @@ html[data-ui="organic-v41"] :is(
   box-shadow: 0 1px 2px rgba(44, 55, 40, 0.08), inset 0 1px rgba(255, 255, 255, 0.66) !important;
 }
 
+html[data-ui="organic-v41"][data-theme="dark"] :is(
+  .dashboard .kpi,
+  .net-card,
+  .hero-graphic,
+  .analytics-chart-block,
+  .card-row-wide,
+  .billing-ledger,
+  .bill-row,
+  .loyalty-card,
+  .record-summary-strip,
+  .table-wrap
+) {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), inset 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
 html[data-ui="organic-v41"] :is(
   .app-header,
   .app-header.is-compact,
@@ -10104,13 +10119,22 @@ html[data-ui="organic-v41"] :is(
 ) {
   content-visibility: auto;
   contain: paint style;
+}
+
+html[data-ui="organic-v41"] .card-row-wide {
+  contain-intrinsic-size: auto 220px;
+}
+
+html[data-ui="organic-v41"] .bill-row {
   contain-intrinsic-size: auto 180px;
 }
 
-html[data-ui="organic-v41"] #recordsBody tr {
-  content-visibility: auto;
-  contain: paint style;
-  contain-intrinsic-size: auto 92px;
+html[data-ui="organic-v41"] .loyalty-card {
+  contain-intrinsic-size: auto 190px;
+}
+
+html[data-ui="organic-v41"] .analytics-chart-block {
+  contain-intrinsic-size: auto 240px;
 }
 
 html[data-ui="organic-v41"] :is(
@@ -10126,11 +10150,37 @@ html[data-ui="organic-v41"] :is(
 }
 
 @media (max-width: 760px) {
+  html[data-ui="organic-v41"] .card-row-wide {
+    contain-intrinsic-size: auto 560px;
+  }
+
+  html[data-ui="organic-v41"] .bill-row {
+    contain-intrinsic-size: auto 360px;
+  }
+
+  html[data-ui="organic-v41"] .loyalty-card {
+    contain-intrinsic-size: auto 320px;
+  }
+
+  html[data-ui="organic-v41"] .analytics-chart-block {
+    contain-intrinsic-size: auto 280px;
+  }
+
   html[data-ui="organic-v41"] #recordsBody tr {
+    content-visibility: auto;
+    contain: paint style;
     contain-intrinsic-size: auto 500px;
   }
 
-  html[data-ui="organic-v41"] :is(.app-header, .app-header.is-compact),
+  html[data-ui="organic-v41"] :is(
+    .app-header,
+    .app-header.is-compact,
+    .card-form,
+    .card-summary-panel,
+    .entry-drawer,
+    .utility-drawer
+  ),
+  html[data-ui="organic-v41"] body.nav-collapsed .app-header,
   html[data-ui="organic-v41"] :is(.app-header, .app-header.is-compact) .section-tabs,
   html[data-ui="organic-v41"] body.nav-collapsed .app-header .section-tabs {
     box-shadow: none !important;
