@@ -8287,6 +8287,13 @@ html[data-ui="organic-v41"] :is(
   .billing-ledger,
   .record-summary-strip,
   .side-tool-rail,
+  thead th,
+  .row-actions button,
+  .card-row-actions button,
+  .loyalty-actions button,
+  .btn-outline,
+  .btn-ghost,
+  .rate-chip,
   input,
   select,
   textarea
@@ -8517,6 +8524,324 @@ html[data-ui="organic-v41"][data-theme="dark"] .display-settings-status.error {
   }
 }
 
+/* -- Dashboard Density & Drawer Adaptation V80 -- */
+html[data-ui="organic-v41"] :is(.card-form-overlay, .card-summary-overlay, .bill-form-overlay) {
+  top: 0;
+  bottom: 0;
+  z-index: 220;
+  height: 100dvh;
+  align-items: stretch;
+}
+
+html[data-ui="organic-v41"] .card-summary-panel {
+  width: min(46rem, 52vw);
+  height: 100%;
+  max-height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 0 8px 0 0;
+}
+
+html[data-ui="organic-v41"] .card-summary-head {
+  position: relative;
+  z-index: 3;
+  min-height: 4.25rem;
+  margin: 0;
+  padding: 0.85rem 1.1rem 0.75rem;
+  align-items: center;
+  background: rgba(250, 249, 244, 0.98) !important;
+}
+
+html[data-ui="organic-v41"] .card-summary-head > div:first-child > span {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+html[data-ui="organic-v41"] .card-summary-head h3 {
+  margin: 0.12rem 0 0;
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+html[data-ui="organic-v41"] .card-summary-table-wrap {
+  min-height: 0;
+  height: auto;
+  max-height: none;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+html[data-ui="organic-v41"] .card-summary-table {
+  min-width: 0;
+  width: 100%;
+  table-layout: fixed;
+}
+
+html[data-ui="organic-v41"] .card-summary-table :is(th, td) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+html[data-ui="organic-v41"] .card-summary-table :is(th, td):first-child {
+  width: 42%;
+}
+
+html[data-ui="organic-v41"] .card-summary-table :is(th, td):nth-child(2) {
+  width: 14%;
+}
+
+html[data-ui="organic-v41"] .card-summary-table :is(th, td):nth-child(3),
+html[data-ui="organic-v41"] .card-summary-table :is(th, td):nth-child(4) {
+  width: 11%;
+}
+
+html[data-ui="organic-v41"] .card-summary-table :is(th, td):nth-child(5) {
+  width: 22%;
+}
+
+html[data-ui="organic-v41"] .card-summary-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(247, 247, 242, 0.98) !important;
+}
+
+html[data-ui="organic-v41"] :is(#cardForm, .bill-form) {
+  width: min(34rem, 42vw);
+  height: 100%;
+  max-height: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: 1rem 1.1rem 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 0 8px 0 0;
+}
+
+html[data-ui="organic-v41"] :is(#cardForm, .bill-form) .drawer-head {
+  position: relative;
+  top: auto;
+  z-index: 4;
+  min-height: 4.25rem;
+  margin: -1rem -1.1rem 0;
+  padding: 0.85rem 1.1rem 0.75rem;
+  align-items: center;
+  background: rgba(250, 249, 244, 0.98) !important;
+}
+
+html[data-ui="organic-v41"] :is(#cardForm, .bill-form) .drawer-head h3 {
+  margin: 0.12rem 0 0;
+  font-size: 1.25rem;
+}
+
+html[data-ui="organic-v41"] :is(.card-form-body, .bill-form-body) {
+  min-height: 0;
+  padding: 1rem 0.1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+html[data-ui="organic-v41"] :is(#cardForm, .bill-form) .card-form-actions {
+  position: relative;
+  grid-row: 3;
+  z-index: 4;
+  margin: 0 -1.1rem;
+  padding: 0.8rem 1.1rem calc(0.8rem + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(93, 112, 82, 0.12);
+  background: rgba(250, 249, 244, 0.98) !important;
+}
+
+html[data-ui="organic-v41"][data-theme="dark"] :is(
+  .card-summary-head,
+  .card-summary-table thead th,
+  #cardForm .drawer-head,
+  #cardForm .card-form-actions,
+  .bill-form .drawer-head,
+  .bill-form .card-form-actions
+) {
+  border-color: rgba(218, 228, 211, 0.11);
+  background: rgba(28, 34, 27, 0.98) !important;
+}
+
+@media (min-width: 981px) {
+  html[data-ui="organic-v41"] #view-fee-dashboard.hero {
+    min-height: 12.5rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard :is(.net-card, .hero-graphic) {
+    min-height: 12.5rem;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard .net-card {
+    padding: 1.35rem 1.55rem;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard #netProfit {
+    font-size: 3rem;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard .net-label {
+    margin-bottom: 0.5rem;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard .net-hint {
+    margin-top: 0.7rem;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard .hero-graphic .ring {
+    width: 13rem;
+    height: 13rem;
+    margin: -6.5rem 0 0 -6.5rem;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard .float-card {
+    padding: 0.58rem 0.75rem;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard .chip-accent {
+    width: 3.2rem;
+    height: 3.2rem;
+  }
+
+  html[data-ui="organic-v41"] .stats[data-view="fee-dashboard"] {
+    margin-bottom: 0.9rem;
+    padding: 1rem 1.1rem;
+  }
+
+  html[data-ui="organic-v41"] .stats[data-view="fee-dashboard"] .stats-head {
+    min-height: 2.35rem;
+    margin-bottom: 0.4rem;
+  }
+
+  html[data-ui="organic-v41"] .stats[data-view="fee-dashboard"] .stat {
+    min-height: 4.75rem;
+    padding: 0.72rem 0.85rem;
+  }
+
+  html[data-ui="organic-v41"] .stats[data-view="fee-dashboard"] .stat-label {
+    margin-bottom: 0.3rem;
+  }
+
+  html[data-ui="organic-v41"] .stats[data-view="fee-dashboard"] .stat-value {
+    font-size: 1.28rem;
+  }
+}
+
+@media (max-width: 760px) {
+  html[data-ui="organic-v41"] :is(.card-summary-panel, #cardForm, .bill-form) {
+    width: 100vw;
+    max-width: 100vw;
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0;
+  }
+
+  html[data-ui="organic-v41"] :is(#cardForm, .bill-form) .field-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.72rem;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-head {
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding-inline: 1.1rem;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-actions {
+    gap: 0.45rem;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-actions strong {
+    font-size: 0.74rem;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table {
+    min-width: 0;
+    width: 100%;
+    display: block;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table thead {
+    display: none;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table tbody {
+    display: grid;
+    gap: 0.65rem;
+    padding: 0.75rem;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table tbody tr {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.72rem;
+    border: 1px solid rgba(93, 112, 82, 0.12);
+    border-radius: 7px;
+    background: rgba(255, 255, 252, 0.48);
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table tbody td {
+    min-width: 0;
+    display: block;
+    padding: 0.42rem 0.35rem;
+    border: 0 !important;
+    background: transparent !important;
+    text-align: left !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table tbody td:first-child,
+  html[data-ui="organic-v41"] .card-summary-table tbody td:nth-child(2),
+  html[data-ui="organic-v41"] .card-summary-table tbody td:nth-child(5),
+  html[data-ui="organic-v41"] .card-summary-table tbody td[colspan] {
+    grid-column: 1 / -1;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table tbody td:nth-child(n + 2)::before {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--muted-foreground);
+    font-size: 0.62rem;
+    font-weight: 700;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table tbody td:nth-child(2)::before {
+    content: "总额度";
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table tbody td:nth-child(3)::before {
+    content: "账单日";
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table tbody td:nth-child(4)::before {
+    content: "还款日";
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table tbody td:nth-child(5)::before {
+    content: "年费政策";
+  }
+
+  html[data-ui="organic-v41"] .card-summary-table .summary-empty-cell::before {
+    display: none;
+  }
+
+  html[data-ui="organic-v41"][data-theme="dark"] .card-summary-table tbody tr {
+    border-color: rgba(218, 228, 211, 0.11);
+    background: rgba(255, 255, 255, 0.035);
+  }
+}
+
 /* -- Toast Feedback V72 -- */
 html[data-ui="organic-v41"] .toast {
   top: calc(var(--fixed-header-offset) + 0.75rem);
@@ -8606,5 +8931,1049 @@ html[data-ui="organic-v41"][data-theme="dark"] .toast.error {
     min-height: 2.6rem;
     padding: 0.52rem 0.76rem 0.52rem 0.56rem;
     font-size: 0.74rem;
+  }
+}
+
+/* -- Mobile Responsive V81 -- */
+html[data-ui="organic-v41"] :is(.mobile-tools-button, .mobile-tab-label, .mobile-record-sort) {
+  display: none;
+}
+
+html[data-ui="organic-v41"] .entry-drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+html[data-ui="organic-v41"] .entry-drawer-actions .btn-primary {
+  flex: 1 1 auto;
+}
+
+@media (max-width: 760px) {
+  html[data-ui="organic-v41"] {
+    --mobile-gutter: 12px;
+    --mobile-topbar-height: 56px;
+    --mobile-nav-height: 64px;
+    --fixed-header-offset: calc(var(--mobile-topbar-height) + env(safe-area-inset-top));
+    min-width: 0;
+    overflow-x: clip;
+    scroll-padding-top: calc(var(--fixed-header-offset) + 12px);
+  }
+
+  html[data-ui="organic-v41"] body {
+    min-width: 0;
+    overflow-x: clip;
+  }
+
+  html[data-ui="organic-v41"] .page {
+    width: 100%;
+    max-width: 100%;
+    padding: calc(var(--fixed-header-offset) + 12px) var(--mobile-gutter)
+      calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + 20px) !important;
+  }
+
+  html[data-ui="organic-v41"] :is(main, .workspace, .left-col, .view-section) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html[data-ui="organic-v41"] .app-header,
+  html[data-ui="organic-v41"] .app-header.is-compact,
+  html[data-ui="organic-v41"] body.nav-collapsed .app-header {
+    position: fixed !important;
+    inset: 0 0 auto !important;
+    z-index: 180;
+    width: 100% !important;
+    height: var(--fixed-header-offset) !important;
+    min-height: var(--fixed-header-offset) !important;
+    display: block !important;
+    padding: env(safe-area-inset-top) var(--mobile-gutter) 0 !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(93, 112, 82, 0.14) !important;
+    border-radius: 0 !important;
+    background: rgba(249, 250, 246, 0.98) !important;
+    box-shadow: 0 8px 24px -22px rgba(44, 55, 40, 0.72) !important;
+    transform: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html[data-ui="organic-v41"] .app-header::before {
+    display: none !important;
+  }
+
+  html[data-ui="organic-v41"] .app-header .app-brand,
+  html[data-ui="organic-v41"] .app-header.is-compact .app-brand {
+    width: 100% !important;
+    height: var(--mobile-topbar-height) !important;
+    min-height: var(--mobile-topbar-height) !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between !important;
+    gap: 12px;
+    padding: 0 !important;
+  }
+
+  html[data-ui="organic-v41"] .app-header .app-brand h1,
+  html[data-ui="organic-v41"] .app-header.is-compact .app-brand h1 {
+    min-width: 0;
+    margin: 0 !important;
+    font-size: 1rem !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+    white-space: nowrap;
+  }
+
+  html[data-ui="organic-v41"] .mobile-tools-button {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    flex: 0 0 44px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(93, 112, 82, 0.2);
+    border-radius: 8px;
+    color: var(--accent-strong);
+    background: rgba(255, 255, 252, 0.72);
+    box-shadow: none;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  html[data-ui="organic-v41"] .mobile-tools-button[aria-expanded="true"] {
+    border-color: rgba(93, 112, 82, 0.44);
+    background: rgba(221, 232, 215, 0.82);
+  }
+
+  html[data-ui="organic-v41"] .app-header .section-tabs,
+  html[data-ui="organic-v41"] .app-header.is-compact .section-tabs,
+  html[data-ui="organic-v41"] body.nav-collapsed .app-header .section-tabs {
+    position: fixed !important;
+    inset: auto 0 0 !important;
+    z-index: 175;
+    width: 100% !important;
+    height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom)) !important;
+    min-height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom)) !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px !important;
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom)) !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(93, 112, 82, 0.14) !important;
+    border-radius: 0 !important;
+    background: rgba(249, 250, 246, 0.98) !important;
+    box-shadow: 0 -10px 28px -26px rgba(44, 55, 40, 0.86) !important;
+    transform: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html[data-ui="organic-v41"] .app-header .section-tab,
+  html[data-ui="organic-v41"] .app-header.is-compact .section-tab {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 52px !important;
+    min-height: 44px !important;
+    display: grid !important;
+    place-items: center;
+    padding: 4px !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  html[data-ui="organic-v41"] .app-header .section-tab.is-active {
+    color: var(--accent-strong) !important;
+    background: rgba(221, 232, 215, 0.72) !important;
+    box-shadow: none !important;
+  }
+
+  html[data-ui="organic-v41"] .app-header .section-tab :is(.tab-index, strong, small) {
+    display: none !important;
+  }
+
+  html[data-ui="organic-v41"] .app-header .section-tab .mobile-tab-label {
+    display: block !important;
+    color: inherit;
+    font-family: var(--font-ui);
+    font-size: 0.74rem;
+    font-weight: 750;
+    line-height: 1.2;
+  }
+
+  html[data-ui="organic-v41"] .side-tool-rail {
+    position: fixed !important;
+    top: calc(var(--fixed-header-offset) + 8px) !important;
+    right: var(--mobile-gutter) !important;
+    bottom: auto !important;
+    left: auto !important;
+    z-index: 190;
+    width: auto !important;
+    min-width: 0;
+    display: none !important;
+    grid-template-columns: repeat(3, 44px);
+    gap: 6px;
+    padding: 8px !important;
+    border: 1px solid rgba(93, 112, 82, 0.2) !important;
+    border-radius: 8px !important;
+    background: rgba(249, 250, 246, 0.99) !important;
+    box-shadow: 0 18px 42px -24px rgba(44, 55, 40, 0.62) !important;
+    transform: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html[data-ui="organic-v41"] body.mobile-tools-open .side-tool-rail {
+    display: grid !important;
+  }
+
+  html[data-ui="organic-v41"] .side-tool-rail :is(.theme-toggle, .header-tool-button) {
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    flex-basis: 44px !important;
+    border-radius: 7px !important;
+  }
+
+  html[data-ui="organic-v41"] .side-tool-rail :is(.theme-toggle, .header-tool-button)[hidden] {
+    display: none !important;
+  }
+
+  html[data-ui="organic-v41"] :is(
+    button,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    select
+  ) {
+    min-height: 44px;
+  }
+
+  html[data-ui="organic-v41"] :is(button, input, select, textarea):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  html[data-ui="organic-v41"] :is(
+    .dashboard,
+    .stats,
+    .analytics-panel,
+    .cards-panel,
+    .records,
+    .loyalty-panel,
+    #view-fee-dashboard.hero
+  ) {
+    width: 100%;
+    min-width: 0;
+    margin: 0 0 12px !important;
+    padding: 14px !important;
+    border-radius: 8px !important;
+  }
+
+  html[data-ui="organic-v41"] .view-section[hidden] {
+    display: none !important;
+  }
+
+  html[data-ui="organic-v41"] :is(.section-head, .loyalty-head, .stats-head) {
+    min-height: 0;
+    margin-bottom: 12px;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  html[data-ui="organic-v41"] :is(
+    .section-heading-copy,
+    .loyalty-head > div:first-child,
+    .records .section-head > div:first-child
+  ) {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 3px 8px;
+  }
+
+  html[data-ui="organic-v41"] .section-title,
+  html[data-ui="organic-v41"] :is(.entry, .records, .cards-panel, .loyalty-head) .section-title {
+    font-size: 1.16rem !important;
+    line-height: 1.25 !important;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .section-description {
+    font-size: 0.7rem;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] :is(.period-filters, .stats-filters) {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  html[data-ui="organic-v41"] .period-filters label {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  html[data-ui="organic-v41"] .period-filters select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  html[data-ui="organic-v41"] .kpi-grid,
+  html[data-ui="organic-v41"] .record-summary-strip,
+  html[data-ui="organic-v41"] .stats-grid,
+  html[data-ui="organic-v41"] .loyalty-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html[data-ui="organic-v41"] :is(.analytics-grid, .cards-list, .loyalty-list) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px;
+  }
+
+  html[data-ui="organic-v41"] .dashboard .kpi,
+  html[data-ui="organic-v41"] .dashboard .kpi:nth-child(1),
+  html[data-ui="organic-v41"] .dashboard .kpi:nth-child(2),
+  html[data-ui="organic-v41"] .dashboard .kpi:nth-child(3),
+  html[data-ui="organic-v41"] .dashboard .kpi:nth-child(4) {
+    min-width: 0;
+    min-height: 8.25rem;
+    grid-template-rows: auto minmax(2.6rem, auto) auto;
+    padding: 11px !important;
+    border-radius: 8px !important;
+  }
+
+  html[data-ui="organic-v41"] .dashboard :is(.spend-kpi, .limit-kpi) .kpi-big,
+  html[data-ui="organic-v41"] .dashboard .kpi > .kpi-big {
+    min-width: 0;
+    min-height: 2.6rem;
+    font-size: 1.38rem !important;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .dashboard .limit-breakdown {
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  html[data-ui="organic-v41"] .dashboard .expiry-breakdown,
+  html[data-ui="organic-v41"] .dashboard .expiry-breakdown > span {
+    grid-column: 1 / -1;
+  }
+
+  html[data-ui="organic-v41"] .dashboard .limit-breakdown :is(small, em) {
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .repayment-strip {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0;
+    margin-top: 10px;
+    padding: 0 12px;
+    border-radius: 8px;
+  }
+
+  html[data-ui="organic-v41"] .repayment-strip > span {
+    min-width: 0;
+    padding: 11px 0;
+    border-right: 0;
+    border-bottom: 1px solid rgba(93, 112, 82, 0.12);
+  }
+
+  html[data-ui="organic-v41"] .repayment-strip > span:last-child {
+    border-bottom: 0;
+  }
+
+  html[data-ui="organic-v41"] .cards-panel .section-head,
+  html[data-ui="organic-v41"] .loyalty-panel .loyalty-head,
+  html[data-ui="organic-v41"] .records .section-head {
+    display: flex;
+    flex-direction: column;
+  }
+
+  html[data-ui="organic-v41"] .card-panel-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  html[data-ui="organic-v41"] .card-sort-control,
+  html[data-ui="organic-v41"] #addCardButton {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  html[data-ui="organic-v41"] .card-sort-control {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+  }
+
+  html[data-ui="organic-v41"] .card-sort-control select,
+  html[data-ui="organic-v41"] .card-panel-actions > button,
+  html[data-ui="organic-v41"] #addLoyaltyButton {
+    width: 100%;
+    min-width: 0;
+  }
+
+  html[data-ui="organic-v41"] .card-row-wide,
+  html[data-ui="organic-v41"] .loyalty-card {
+    width: 100%;
+    min-width: 0;
+    padding: 12px !important;
+    border-radius: 8px !important;
+  }
+
+  html[data-ui="organic-v41"] .card-row-wide .card-row-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+  }
+
+  html[data-ui="organic-v41"] .card-row-wide .card-row-type {
+    display: block;
+    line-height: 1.45;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] :is(.card-row-actions, .loyalty-actions) {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  html[data-ui="organic-v41"] :is(.card-row-actions, .loyalty-actions) button {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  html[data-ui="organic-v41"] .card-row-actions .move-card {
+    width: 44px;
+    min-width: 44px;
+    justify-self: start;
+    padding: 0;
+  }
+
+  html[data-ui="organic-v41"] .card-row-actions .move-card-down {
+    justify-self: end;
+  }
+
+  html[data-ui="organic-v41"] .card-row-actions .delete-card {
+    grid-column: 1 / -1;
+  }
+
+  html[data-ui="organic-v41"] .card-row-dashboard {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 0;
+  }
+
+  html[data-ui="organic-v41"] .card-limit-summary {
+    min-width: 0;
+    padding: 0 0 11px;
+  }
+
+  html[data-ui="organic-v41"] .card-limit-summary .card-row-total {
+    font-size: 1.35rem;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .card-row-wide .card-usage {
+    min-width: 0;
+    padding: 11px 0;
+    border-top: 1px solid rgba(93, 112, 82, 0.12);
+    border-right: 0;
+    border-bottom: 1px solid rgba(93, 112, 82, 0.12);
+    border-left: 0;
+  }
+
+  html[data-ui="organic-v41"] .card-usage-head {
+    gap: 8px;
+  }
+
+  html[data-ui="organic-v41"] .card-usage-head > span {
+    min-width: 0;
+  }
+
+  html[data-ui="organic-v41"] .card-usage-head strong {
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .card-cycle-grid {
+    grid-column: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 11px 0 0;
+    border-top: 0;
+  }
+
+  html[data-ui="organic-v41"] .card-cycle-grid .card-temp-expiry {
+    grid-column: 1 / -1;
+  }
+
+  html[data-ui="organic-v41"] .billing-ledger {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px !important;
+    border-radius: 8px;
+  }
+
+  html[data-ui="organic-v41"] .billing-ledger-head {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  html[data-ui="organic-v41"] .billing-ledger-head #addBillInlineButton {
+    min-width: 0;
+  }
+
+  html[data-ui="organic-v41"] .bill-row-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html[data-ui="organic-v41"] .bill-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  html[data-ui="organic-v41"] .bill-actions button {
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  html[data-ui="organic-v41"] .bill-actions .delete-bill {
+    grid-column: 1 / -1;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard.hero {
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard .hero-graphic {
+    display: none !important;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard .net-card {
+    min-height: 0;
+    padding: 16px !important;
+    border-radius: 8px !important;
+  }
+
+  html[data-ui="organic-v41"] #view-fee-dashboard #netProfit {
+    font-size: 2.15rem;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .stats {
+    padding: 14px !important;
+  }
+
+  html[data-ui="organic-v41"] .stats-grid {
+    overflow: hidden;
+    border-radius: 7px;
+  }
+
+  html[data-ui="organic-v41"] .stats .stat {
+    min-width: 0;
+    min-height: 5.25rem;
+    padding: 11px 9px;
+    border-right: 1px solid rgba(255, 255, 255, 0.13);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.13);
+  }
+
+  html[data-ui="organic-v41"] .stats .stat:nth-child(2n) {
+    border-right: 0;
+  }
+
+  html[data-ui="organic-v41"] .stats .stat:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+
+  html[data-ui="organic-v41"] .stats .stat-value {
+    font-size: 1.16rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .analytics-grid {
+    display: grid;
+  }
+
+  html[data-ui="organic-v41"] .analytics-chart-block {
+    min-width: 0;
+    padding: 12px;
+    border-radius: 8px !important;
+  }
+
+  html[data-ui="organic-v41"] :is(.analytics-chart-head, .trend-chart, .card-fee-chart) {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  html[data-ui="organic-v41"] :is(.analytics-chart-head, .trend-label, .card-fee-label) {
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .loyalty-head #addLoyaltyButton {
+    align-self: stretch;
+  }
+
+  html[data-ui="organic-v41"] .loyalty-overview {
+    width: 100%;
+    margin: 0 0 10px;
+  }
+
+  html[data-ui="organic-v41"] .loyalty-overview > span {
+    min-width: 0;
+    padding: 11px;
+    border-radius: 8px;
+  }
+
+  html[data-ui="organic-v41"] .loyalty-card :is(.loyalty-program, .loyalty-note, .loyalty-account) {
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .loyalty-details {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  html[data-ui="organic-v41"] .records .toolbar {
+    width: 100%;
+    max-width: none;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  html[data-ui="organic-v41"] .records .toolbar > * {
+    min-width: 0;
+    width: 100%;
+  }
+
+  html[data-ui="organic-v41"] .records .records-add-button {
+    grid-column: 1 / -1;
+    width: 100%;
+    order: initial;
+  }
+
+  html[data-ui="organic-v41"] .records .select-field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  html[data-ui="organic-v41"] .mobile-record-sort {
+    display: grid;
+  }
+
+  html[data-ui="organic-v41"] .display-settings-control,
+  html[data-ui="organic-v41"] .display-settings-button {
+    width: 100%;
+  }
+
+  html[data-ui="organic-v41"] .display-settings-panel {
+    position: fixed;
+    inset: calc(var(--fixed-header-offset) + 8px) var(--mobile-gutter)
+      calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + 8px);
+    z-index: 230;
+    width: auto;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: 8px;
+  }
+
+  html[data-ui="organic-v41"] .display-settings-options label {
+    min-height: 44px;
+  }
+
+  html[data-ui="organic-v41"] .advanced-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  html[data-ui="organic-v41"] .advanced-filters #resetAdvancedFiltersButton {
+    grid-column: 1 / -1;
+  }
+
+  html[data-ui="organic-v41"] .record-summary-strip {
+    margin: 10px 0;
+  }
+
+  html[data-ui="organic-v41"] .record-summary-strip > span {
+    min-width: 0;
+    padding: 10px;
+  }
+
+  html[data-ui="organic-v41"] .record-summary-strip strong {
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .records .table-wrap {
+    width: 100%;
+    min-width: 0;
+    overflow-x: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  html[data-ui="organic-v41"] .records table,
+  html[data-ui="organic-v41"] .records tbody {
+    min-width: 0;
+    width: 100%;
+    display: block;
+  }
+
+  html[data-ui="organic-v41"] .records thead {
+    display: none;
+  }
+
+  html[data-ui="organic-v41"] #recordsBody tr {
+    width: 100%;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(93, 112, 82, 0.16);
+    background: transparent !important;
+  }
+
+  html[data-ui="organic-v41"] #recordsBody tr:last-child {
+    border-bottom: 0;
+  }
+
+  html[data-ui="organic-v41"] #recordsBody td {
+    min-width: 0;
+    display: block;
+    padding: 8px 6px;
+    border: 0 !important;
+    background: transparent !important;
+    text-align: left !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] #recordsBody td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 3px;
+    color: var(--muted-foreground);
+    font-size: 0.67rem;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  html[data-ui="organic-v41"] #recordsBody td[data-record-column="date"],
+  html[data-ui="organic-v41"] #recordsBody td[data-record-column="card"],
+  html[data-ui="organic-v41"] #recordsBody td[data-record-column="billMonth"],
+  html[data-ui="organic-v41"] #recordsBody td[data-record-column="actions"] {
+    grid-column: 1 / -1;
+  }
+
+  html[data-ui="organic-v41"] #recordsBody .row-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  html[data-ui="organic-v41"] #recordsBody .row-actions button {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  html[data-ui="organic-v41"] :is(.card-form-overlay,
+    .card-summary-overlay,
+    .bill-form-overlay,
+    .loyalty-form-overlay,
+    .entry-form-overlay,
+    .right-drawer-overlay) {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    width: 100vw;
+    height: 100dvh;
+    padding: 0;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  html[data-ui="organic-v41"] :is(#cardForm,
+    .bill-form,
+    .loyalty-form,
+    .entry-drawer,
+    .utility-drawer) {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    margin: 0;
+    padding: 0 !important;
+    overflow: hidden;
+    border: 0 !important;
+    border-radius: 0 !important;
+    animation: none !important;
+  }
+
+  html[data-ui="organic-v41"] .card-summary-panel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    grid-template-rows: auto minmax(0, 1fr);
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  html[data-ui="organic-v41"] :is(.card-form-body,
+    .bill-form-body,
+    .loyalty-form-body,
+    .entry-drawer-body,
+    .card-summary-table-wrap,
+    .utility-drawer-body) {
+    min-height: 0;
+    padding: 12px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  html[data-ui="organic-v41"] :is(
+    #cardForm .drawer-head,
+    .bill-form .drawer-head,
+    .loyalty-form .drawer-head,
+    .entry-drawer .entry-drawer-head,
+    .utility-drawer .drawer-head,
+    .card-summary-head
+  ) {
+    position: relative;
+    top: auto;
+    z-index: 3;
+    min-height: calc(58px + env(safe-area-inset-top));
+    margin: 0 !important;
+    padding: calc(8px + env(safe-area-inset-top)) 12px 8px !important;
+    align-items: center;
+    border-bottom: 1px solid rgba(93, 112, 82, 0.14);
+    background: rgba(249, 250, 246, 0.99) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html[data-ui="organic-v41"] :is(.drawer-head h3, .card-summary-head h3) {
+    font-size: 1.12rem !important;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] :is(.drawer-head .btn-ghost, .card-summary-head .btn-ghost) {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 10px;
+  }
+
+  html[data-ui="organic-v41"] :is(
+    #cardForm .card-form-actions,
+    .bill-form .card-form-actions,
+    .loyalty-form .card-form-actions,
+    .entry-drawer-actions
+  ) {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 !important;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) !important;
+    border-top: 1px solid rgba(93, 112, 82, 0.14);
+    background: rgba(249, 250, 246, 0.99) !important;
+  }
+
+  html[data-ui="organic-v41"] :is(
+    #cardForm .card-form-actions,
+    .bill-form .card-form-actions,
+    .loyalty-form .card-form-actions,
+    .entry-drawer-actions
+  ) button {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  html[data-ui="organic-v41"] :is(
+    .field-row,
+    .entry-row-primary,
+    .entry-row-channel,
+    .annual-fee-fields,
+    .credit-account-fields,
+    .loyalty-expiry-row
+  ) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px;
+  }
+
+  html[data-ui="organic-v41"] .entry-drawer-body {
+    grid-row: 2;
+  }
+
+  html[data-ui="organic-v41"] .entry-drawer-actions {
+    grid-row: 3;
+  }
+
+  html[data-ui="organic-v41"] .utility-drawer-body {
+    grid-row: 2;
+  }
+
+  html[data-ui="organic-v41"] .utility-drawer :is(.reminder-overview, .data-tool-list, .data-health, .account-summary, .account-actions) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  html[data-ui="organic-v41"] .reminder-drawer .drawer-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  html[data-ui="organic-v41"] .drawer-head-actions {
+    display: flex;
+    gap: 4px;
+  }
+
+  html[data-ui="organic-v41"] .drawer-head-actions .btn-ghost {
+    padding-inline: 8px;
+    font-size: 0.68rem;
+  }
+
+  html[data-ui="organic-v41"] .statement-record-row {
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  html[data-ui="organic-v41"] .statement-record-amount {
+    grid-column: 2;
+    overflow-wrap: anywhere;
+  }
+
+  html[data-ui="organic-v41"] .toast {
+    top: calc(var(--fixed-header-offset) + 8px);
+    max-width: calc(100vw - 24px);
+  }
+
+  html[data-ui="organic-v41"] body:has(.drawer-overlay:not([hidden])) {
+    overflow: hidden;
+  }
+
+  html[data-ui="organic-v41"][data-theme="dark"] :is(.app-header, .app-header.is-compact) {
+    border-color: rgba(218, 228, 211, 0.12) !important;
+    background: rgba(24, 30, 23, 0.99) !important;
+  }
+
+  html[data-ui="organic-v41"][data-theme="dark"] .app-header .section-tabs {
+    border-color: rgba(218, 228, 211, 0.12) !important;
+    background: rgba(24, 30, 23, 0.99) !important;
+  }
+
+  html[data-ui="organic-v41"][data-theme="dark"] .app-header .section-tab.is-active,
+  html[data-ui="organic-v41"][data-theme="dark"] .mobile-tools-button[aria-expanded="true"] {
+    background: rgba(94, 117, 81, 0.36) !important;
+  }
+
+  html[data-ui="organic-v41"][data-theme="dark"] :is(.mobile-tools-button, .side-tool-rail) {
+    border-color: rgba(218, 228, 211, 0.14) !important;
+    color: var(--foreground);
+    background: rgba(27, 34, 26, 0.99) !important;
+  }
+
+  html[data-ui="organic-v41"][data-theme="dark"] :is(
+    #cardForm .drawer-head,
+    .bill-form .drawer-head,
+    .loyalty-form .drawer-head,
+    .entry-drawer .entry-drawer-head,
+    .utility-drawer .drawer-head,
+    .card-summary-head,
+    #cardForm .card-form-actions,
+    .bill-form .card-form-actions,
+    .loyalty-form .card-form-actions,
+    .entry-drawer-actions
+  ) {
+    border-color: rgba(218, 228, 211, 0.11) !important;
+    background: rgba(25, 31, 24, 0.99) !important;
+  }
+
+  html[data-ui="organic-v41"][data-theme="dark"] #recordsBody tr {
+    border-color: rgba(218, 228, 211, 0.11);
+  }
+}
+
+@media (max-width: 430px) {
+  html[data-ui="organic-v41"] .advanced-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-ui="organic-v41"] .advanced-filters #resetAdvancedFiltersButton {
+    grid-column: auto;
+  }
+
+  html[data-ui="organic-v41"] :is(.kpi-grid, .record-summary-strip, .stats-grid) {
+    gap: 7px !important;
+  }
+
+  html[data-ui="organic-v41"] .dashboard .kpi,
+  html[data-ui="organic-v41"] .dashboard .kpi:nth-child(1),
+  html[data-ui="organic-v41"] .dashboard .kpi:nth-child(2),
+  html[data-ui="organic-v41"] .dashboard .kpi:nth-child(3),
+  html[data-ui="organic-v41"] .dashboard .kpi:nth-child(4) {
+    padding: 10px !important;
+  }
+
+  html[data-ui="organic-v41"] .dashboard :is(.spend-kpi, .limit-kpi) .kpi-big,
+  html[data-ui="organic-v41"] .dashboard .kpi > .kpi-big {
+    font-size: 1.28rem !important;
+  }
+
+  html[data-ui="organic-v41"] .display-settings-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-ui="organic-v41"] .billing-ledger-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  html[data-ui="organic-v41"] .billing-ledger-head #addBillInlineButton {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-ui="organic-v41"] :is(.side-tool-rail, .section-tabs, .drawer-overlay) {
+    transition: none !important;
+    animation: none !important;
   }
 }

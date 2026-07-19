@@ -12,7 +12,7 @@ const RECENT_RATES_KEY = "pointsLedger_recent_rates_v1";
 const CARD_SORT_KEY = "pointsLedger_card_sort_v1";
 const FEE_VISIBILITY_KEY = "pointsLedger_fee_visibility_v1";
 const SCHEMA_KEY = "pointsLedger_schema_v3";
-window.__pointsLedgerBuild = "fee-dashboard-total-fees-v71";
+window.__pointsLedgerBuild = "mobile-responsive-v73";
 const CreditAccountModel = window.CreditAccountModel;
 const CardSortModel = window.CardSortModel;
 const FeeVisibilityModel = window.FeeVisibilityModel;
@@ -72,6 +72,10 @@ const displaySettingsButton = $("#displaySettingsButton");
 const displaySettingsPanel = $("#displaySettingsPanel");
 const displaySettingsStatus = $("#displaySettingsStatus");
 const recordSummaryStrip = $("#recordSummaryStrip");
+const mobileToolsButton = $("#mobileToolsButton");
+const mobileToolsMenu = $("#mobileToolsMenu");
+const mobileRecordSort = $("#mobileRecordSort");
+const mobileViewport = window.matchMedia("(max-width: 760px)");
 
 const inputs = {
   date: $("#dateInput"),
@@ -244,6 +248,13 @@ let reminderReadIds = new Set(Array.isArray(storedReminderReadIds) ? storedRemin
 const VIEW_KEY = "pointsLedger_view_v1";
 const validViews = new Set(["cards", "fees", "fee-dashboard", "points"]);
 
+function setMobileToolsOpen(open, { restoreFocus = false } = {}) {
+  const shouldOpen = Boolean(open) && mobileViewport.matches;
+  document.body.classList.toggle("mobile-tools-open", shouldOpen);
+  mobileToolsButton.setAttribute("aria-expanded", String(shouldOpen));
+  if (!shouldOpen && restoreFocus) mobileToolsButton.focus();
+}
+
 function openEntryDrawer({ reset = true, focus = true } = {}) {
   if (reset) resetForm();
   entryFormOverlay.hidden = false;
@@ -258,6 +269,7 @@ function closeEntryDrawer() {
 
 function switchView(view, focusTab = false) {
   const activeView = validViews.has(view) ? view : "cards";
+  setMobileToolsOpen(false);
   if (activeView !== "fees") setDisplaySettingsOpen(false);
   document.body.dataset.activeView = activeView;
   localStorage.setItem(VIEW_KEY, activeView);
@@ -801,6 +813,25 @@ $("#importBackupInput").addEventListener("change", (event) => {
 [reminderOverlay, dataToolsOverlay, statementOverlay].forEach((overlay) => {
   overlay.addEventListener("click", (event) => { if (event.target === overlay) overlay.hidden = true; });
 });
+mobileToolsButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  setMobileToolsOpen(mobileToolsButton.getAttribute("aria-expanded") !== "true");
+});
+mobileToolsMenu.addEventListener("click", (event) => {
+  if (event.target.closest("button")) setMobileToolsOpen(false);
+});
+document.addEventListener("click", (event) => {
+  if (mobileToolsButton.getAttribute("aria-expanded") !== "true") return;
+  if (!mobileToolsMenu.contains(event.target) && !mobileToolsButton.contains(event.target)) {
+    setMobileToolsOpen(false);
+  }
+});
+const closeMobileToolsOnViewportChange = () => setMobileToolsOpen(false);
+if (typeof mobileViewport.addEventListener === "function") {
+  mobileViewport.addEventListener("change", closeMobileToolsOnViewportChange);
+} else {
+  mobileViewport.addListener(closeMobileToolsOnViewportChange);
+}
 setPrivacy(privacyEnabled, false);
 
 /* ══════════════════════════════════════════════════
@@ -1131,7 +1162,9 @@ cardSummaryPanel.addEventListener("click", (e) => {
   }
 });
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && !displaySettingsPanel.hidden) {
+  if (e.key === "Escape" && mobileToolsButton.getAttribute("aria-expanded") === "true") {
+    setMobileToolsOpen(false, { restoreFocus: true });
+  } else if (e.key === "Escape" && !displaySettingsPanel.hidden) {
     setDisplaySettingsOpen(false);
     displaySettingsButton.focus();
   } else if (e.key === "Escape" && (!reminderOverlay.hidden || !dataToolsOverlay.hidden || !statementOverlay.hidden)) {
@@ -1939,6 +1972,20 @@ function getFilteredRecords() {
   });
 }
 
+const validRecordSortKeys = new Set(["date", "cashout", "fee", "pointValue", "net"]);
+
+function syncRecordSortControls() {
+  mobileRecordSort.value = `${sortKey}:${sortDir}`;
+}
+
+function setRecordSort(key, direction = "desc") {
+  if (!validRecordSortKeys.has(key)) return;
+  sortKey = key;
+  sortDir = direction === "asc" ? "asc" : "desc";
+  syncRecordSortControls();
+  renderRecords();
+}
+
 function renderAdvancedFilterOptions() {
   const select = $("#recordCardFilter");
   const current = select.value || "all";
@@ -1990,11 +2037,12 @@ function renderStats() {
   const totalCashout = sum(f, "cashout");
   const totalFee = sum(f, "fee");
   const totalPointValue = sum(f, "pointValue");
+  const averageFeePerRecord = f.length > 0 ? totalFee / f.length : 0;
 
   out.netProfit.textContent = money(totalFee);
   out.netProfit.className = "";
   out.profitHint.textContent = f.length
-    ? `${f.length} 笔手续费记录`
+    ? `${f.length} 笔记录 · 笔均手续费 ${money(averageFeePerRecord)}`
     : "当前周期暂无手续费记录";
   out.totalFee.textContent = money(totalFee);
   out.totalPointValue.textContent = money(totalPointValue);
@@ -2197,17 +2245,17 @@ function renderRecords() {
     const row = document.createElement("tr");
     if (r.id === editingId) row.classList.add("editing-row");
     row.innerHTML = `
-      <td data-record-column="date">${r.date}</td>
-      <td class="record-card-cell" data-record-column="card"><span class="cell-card"></span><span class="cell-note"></span></td>
-      <td data-record-column="method"><span class="cell-method"></span></td>
-      <td data-record-column="channel"><span class="cell-channel"></span></td>
-      <td class="num" data-record-column="cashout">${money(r.cashout)}</td>
-      <td class="num" data-record-column="fee">${money(r.fee)}</td>
-      <td class="num" data-record-column="rate"><span class="fee-rate-badge">${feeRate.toFixed(2)}%</span></td>
-      <td class="num cell-strong" data-record-column="pointValue">${money(r.pointValue)}</td>
-      <td class="num ${net < 0 ? "loss" : "gain"}" data-record-column="net">${money(net)}</td>
-      <td data-record-column="billMonth"><span class="cell-bill-month"></span></td>
-      <td data-record-column="actions">
+      <td data-record-column="date" data-label="日期">${r.date}</td>
+      <td class="record-card-cell" data-record-column="card" data-label="信用卡"><span class="cell-card"></span><span class="cell-note"></span></td>
+      <td data-record-column="method" data-label="消费形式"><span class="cell-method"></span></td>
+      <td data-record-column="channel" data-label="渠道"><span class="cell-channel"></span></td>
+      <td class="num" data-record-column="cashout" data-label="套现金额">${money(r.cashout)}</td>
+      <td class="num" data-record-column="fee" data-label="手续费">${money(r.fee)}</td>
+      <td class="num" data-record-column="rate" data-label="费率"><span class="fee-rate-badge">${feeRate.toFixed(2)}%</span></td>
+      <td class="num cell-strong" data-record-column="pointValue" data-label="积分价值">${money(r.pointValue)}</td>
+      <td class="num ${net < 0 ? "loss" : "gain"}" data-record-column="net" data-label="净收益">${money(net)}</td>
+      <td data-record-column="billMonth" data-label="账单月份"><span class="cell-bill-month"></span></td>
+      <td data-record-column="actions" data-label="操作">
         <div class="row-actions">
           <button class="edit-row" type="button" data-id="${r.id}">编辑</button>
           <button class="delete-row" type="button" data-id="${r.id}">删除</button>
@@ -2232,6 +2280,7 @@ function renderRecords() {
       th.setAttribute("aria-sort", "none");
     }
   });
+  syncRecordSortControls();
   applyFeeVisibility();
 }
 
@@ -2429,14 +2478,17 @@ recordsBody.addEventListener("click", async (e) => {
 
 $$("th.sortable").forEach((th) => {
   const doSort = () => {
-    if (sortKey === th.dataset.sort) sortDir = sortDir === "asc" ? "desc" : "asc";
-    else { sortKey = th.dataset.sort; sortDir = "desc"; }
-    renderRecords();
+    const nextDirection = sortKey === th.dataset.sort && sortDir === "desc" ? "asc" : "desc";
+    setRecordSort(th.dataset.sort, nextDirection);
   };
   th.addEventListener("click", doSort);
   th.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); doSort(); } });
 });
 
+mobileRecordSort.addEventListener("change", () => {
+  const [key, direction] = mobileRecordSort.value.split(":");
+  setRecordSort(key, direction);
+});
 monthFilter.addEventListener("change", renderRecords);
 $("#toggleAdvancedFiltersButton").addEventListener("click", () => {
   const nextOpen = advancedFilters.hidden;

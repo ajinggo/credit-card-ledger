@@ -60,6 +60,8 @@ test("the final phone layer defines navigation, tools, safe areas, and touch tar
   assert.match(mobileCss, /\.section-tabs[\s\S]*position:\s*fixed[\s\S]*bottom:\s*0/);
   assert.match(mobileCss, /grid-template-columns:\s*repeat\(4,\s*minmax\(0,\s*1fr\)\)/);
   assert.match(mobileCss, /padding-bottom:[^;]*env\(safe-area-inset-bottom\)/);
+  assert.match(mobileCss, /\.app-header,[\s\S]*overflow:\s*visible\s*!important/);
+  assert.match(mobileCss, /\.app-header::before[\s\S]*display:\s*none\s*!important/);
   assert.match(mobileCss, /\.mobile-tools-button[\s\S]*min-width:\s*44px[\s\S]*min-height:\s*44px/);
   assert.match(mobileCss, /body\.mobile-tools-open[\s\S]*\.side-tool-rail[\s\S]*display:\s*grid/);
 });

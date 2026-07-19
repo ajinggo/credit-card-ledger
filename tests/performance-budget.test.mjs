@@ -31,3 +31,9 @@ test("repeated surfaces no longer use backdrop blur", () => {
   assert.match(organicCss, /Performance Pass V75[\s\S]*\.dashboard \.kpi[\s\S]*\.card-row-wide[\s\S]*backdrop-filter:\s*none\s*!important/);
   assert.match(organicCss, /-webkit-backdrop-filter:\s*none\s*!important/);
 });
+
+test("repeated table and row controls do not create backdrop layers", () => {
+  const performanceLayer = organicCss.slice(organicCss.indexOf("Performance Pass V75"));
+  assert.match(performanceLayer, /thead th[\s\S]*\.row-actions button[\s\S]*backdrop-filter:\s*none\s*!important/);
+  assert.match(performanceLayer, /\.card-row-actions button[\s\S]*\.loyalty-actions button[\s\S]*-webkit-backdrop-filter:\s*none\s*!important/);
+});

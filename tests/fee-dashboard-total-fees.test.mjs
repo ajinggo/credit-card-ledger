@@ -23,12 +23,25 @@ test("headline total uses the period-filtered fee sum", () => {
   assert.doesNotMatch(renderStatsSource, /const net = totalPointValue - totalFee/);
 });
 
+test("headline hint shows the period average fee without adding a seventh metric", () => {
+  assert.match(
+    renderStatsSource,
+    /const averageFeePerRecord = f\.length > 0 \? totalFee \/ f\.length : 0/,
+  );
+  assert.match(
+    renderStatsSource,
+    /`\$\{f\.length\} 笔记录 · 笔均手续费 \$\{money\(averageFeePerRecord\)\}`/,
+  );
+  const statsMarkup = indexHtml.match(/<div class="stats-grid">([\s\S]*?)<\/div>\s*<\/section>/)?.[1] || "";
+  assert.equal((statsMarkup.match(/class="stat"/g) || []).length, 6);
+});
+
 test("monthly trend aggregates fees without requiring point values", () => {
   assert.match(renderTrendSource, /byMonth\[k\] = \(byMonth\[k\] \|\| 0\) \+ Number\(r\.fee \|\| 0\)/);
   assert.doesNotMatch(renderTrendSource, /pointValue|r\.fee\)/);
 });
 
 test("dashboard script cache identifies the fee-cost build", () => {
-  assert.match(indexHtml, /app\.js\?v=71/);
-  assert.match(appJs, /window\.__pointsLedgerBuild = "fee-dashboard-total-fees-v71"/);
+  assert.match(indexHtml, /app\.js\?v=73/);
+  assert.match(appJs, /window\.__pointsLedgerBuild = "mobile-responsive-v73"/);
 });
