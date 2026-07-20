@@ -27,11 +27,24 @@
         <div class="auth-brand"><span>Cloud Ledger</span><strong>信用卡管理账本</strong></div>
         <form id="authForm" class="auth-form" autocomplete="on">
           <h2 id="authTitle">登录云端账本</h2>
-          <label><span>邮箱</span><input id="authEmail" type="email" autocomplete="email" required /></label>
-          <label><span>密码</span><input id="authPassword" type="password" autocomplete="current-password" minlength="8" required /></label>
+          <label id="authEmailField">
+            <span>邮箱</span>
+            <input id="authEmail" type="email" autocomplete="email" aria-describedby="authMessage" required />
+          </label>
+          <label id="authPasswordField">
+            <span id="authPasswordLabel">密码</span>
+            <input id="authPassword" type="password" autocomplete="current-password" minlength="8" aria-describedby="authMessage" required />
+          </label>
+          <label id="authConfirmPasswordField" hidden>
+            <span>确认新密码</span>
+            <input id="authConfirmPassword" type="password" autocomplete="new-password" minlength="8" aria-describedby="authMessage" disabled />
+          </label>
           <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
           <button class="btn-primary" type="submit"><span id="authSubmitLabel">登录</span></button>
-          <button id="authModeButton" class="btn-ghost auth-mode-button" type="button">没有账号，创建一个</button>
+          <div class="auth-secondary-actions">
+            <button id="authForgotPasswordButton" class="auth-text-button" type="button">忘记密码？</button>
+            <button id="authModeButton" class="btn-ghost auth-mode-button" type="button">没有账号，创建一个</button>
+          </div>
         </form>
       </section>
     </div>

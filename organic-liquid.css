@@ -10190,3 +10190,44 @@ html[data-ui="organic-v41"] :is(
     box-shadow: none !important;
   }
 }
+
+/* -- Password Recovery V83 -- */
+html[data-ui="organic-v41"] .auth-form [hidden] {
+  display: none !important;
+}
+
+html[data-ui="organic-v41"] .auth-secondary-actions {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+}
+
+html[data-ui="organic-v41"] .auth-text-button {
+  min-height: 44px;
+  padding: 0.35rem 0.5rem;
+  border: 0;
+  color: var(--accent-strong);
+  background: transparent;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+html[data-ui="organic-v41"] .auth-text-button:hover,
+html[data-ui="organic-v41"] .auth-text-button:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+html[data-ui="organic-v41"] .auth-form :is(button, input):disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+@media (max-width: 520px) {
+  html[data-ui="organic-v41"] .auth-panel {
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+  }
+}
