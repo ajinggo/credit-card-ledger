@@ -34,6 +34,7 @@
   const configured = /^https:\/\/.+\.supabase\.co$/.test(config.url || "")
     && typeof config.publishableKey === "string"
     && config.publishableKey.length > 20;
+  const AuthFlowModel = window.AuthFlowModel;
 
   const authOverlay = document.querySelector("#authOverlay");
   const authForm = document.querySelector("#authForm");
@@ -41,8 +42,14 @@
   const authSubmitLabel = document.querySelector("#authSubmitLabel");
   const authModeButton = document.querySelector("#authModeButton");
   const authMessage = document.querySelector("#authMessage");
+  const authEmailField = document.querySelector("#authEmailField");
   const authEmail = document.querySelector("#authEmail");
+  const authPasswordField = document.querySelector("#authPasswordField");
+  const authPasswordLabel = document.querySelector("#authPasswordLabel");
   const authPassword = document.querySelector("#authPassword");
+  const authConfirmPasswordField = document.querySelector("#authConfirmPasswordField");
+  const authConfirmPassword = document.querySelector("#authConfirmPassword");
+  const authForgotPasswordButton = document.querySelector("#authForgotPasswordButton");
   const accountButton = document.querySelector("#accountButton");
   const accountOverlay = document.querySelector("#accountOverlay");
   const accountEmail = document.querySelector("#accountEmail");
@@ -58,6 +65,11 @@
 
   let client = null;
   let session = null;
+  let recoverySession = null;
+  const recoveryLocationState = AuthFlowModel.getRecoveryLocationState(location);
+  let recoveryRedirectPending = recoveryLocationState === "recovery";
+  let recoveryRedirectErrorActive = recoveryLocationState === "expired";
+  let resetRequestComplete = false;
   let authMode = "signin";
   let syncTimer = null;
   let syncing = false;
@@ -88,31 +100,88 @@
     authMessage.dataset.tone = tone;
   }
 
-  function setAuthMode(mode) {
-    authMode = mode === "signup" ? "signup" : "signin";
-    const signingUp = authMode === "signup";
-    authTitle.textContent = signingUp ? "创建云端账本" : "登录云端账本";
-    authSubmitLabel.textContent = signingUp ? "注册账号" : "登录";
-    authModeButton.textContent = signingUp ? "已有账号，直接登录" : "没有账号，创建一个";
-    authPassword.autocomplete = signingUp ? "new-password" : "current-password";
-    setAuthMessage("");
+  function setFieldVisible(field, input, visible) {
+    field.hidden = !visible;
+    input.disabled = !visible;
+    input.required = visible;
+  }
+
+  function setAuthMode(mode, { clearMessage = true } = {}) {
+    const view = AuthFlowModel.getAuthView(mode);
+    const modeChanged = authMode !== view.mode;
+    if (modeChanged) {
+      authPassword.value = "";
+      authConfirmPassword.value = "";
+    }
+    authMode = view.mode;
+    if (authMode !== "request-reset") resetRequestComplete = false;
+    authTitle.textContent = view.title;
+    authSubmitLabel.textContent = view.submitLabel;
+    authModeButton.textContent = view.modeButtonLabel;
+    authModeButton.hidden = !view.modeButtonVisible;
+    authForgotPasswordButton.hidden = !view.forgotVisible;
+    authPasswordLabel.textContent = authMode === "update-password" ? "新密码" : "密码";
+    authPassword.autocomplete = view.passwordAutocomplete;
+    setFieldVisible(authEmailField, authEmail, view.emailVisible);
+    setFieldVisible(authPasswordField, authPassword, view.passwordVisible);
+    setFieldVisible(authConfirmPasswordField, authConfirmPassword, view.confirmationVisible);
+    if (clearMessage) setAuthMessage("");
+  }
+
+  function setAuthBusy(busy) {
+    authOverlay.setAttribute("aria-busy", String(busy));
+    authForm.querySelectorAll("button").forEach((button) => {
+      button.disabled = busy;
+    });
+  }
+
+  async function runAuthRequest(pendingMessage, operation) {
+    setAuthBusy(true);
+    setAuthMessage(pendingMessage);
+    try {
+      await operation();
+    } catch (error) {
+      setAuthMessage(error.message || "请求失败，请稍后重试。", "error");
+    } finally {
+      setAuthBusy(false);
+    }
   }
 
   function showSignedOut() {
     session = null;
+    recoverySession = null;
     document.documentElement.classList.add("cloud-auth-locked");
     authOverlay.hidden = false;
     accountOverlay.hidden = true;
     accountButton.hidden = true;
     accountEmail.textContent = "未登录";
     setSyncState("signed-out", "未登录");
+    setAuthMode("signin");
   }
 
   function showSignedIn(nextSession) {
     session = nextSession;
+    recoverySession = null;
+    recoveryRedirectPending = false;
+    recoveryRedirectErrorActive = false;
+    resetRequestComplete = false;
     authOverlay.hidden = true;
     accountButton.hidden = false;
     accountEmail.textContent = session.user.email || "已登录用户";
+  }
+
+  function showPasswordRecovery(nextSession) {
+    session = nextSession;
+    recoverySession = nextSession;
+    recoveryRedirectPending = false;
+    recoveryRedirectErrorActive = false;
+    resetRequestComplete = false;
+    document.documentElement.classList.add("cloud-auth-locked");
+    authOverlay.hidden = false;
+    accountOverlay.hidden = true;
+    accountButton.hidden = true;
+    setSyncState("attention", "正在重置密码");
+    setAuthMode("update-password");
   }
 
   async function readRemoteRow() {
@@ -240,6 +309,48 @@
     }
   }
 
+  function handleAuthStateChange(event, nextSession) {
+    const redirectWasPending = recoveryRedirectPending;
+    const action = AuthFlowModel.getAuthEventAction(event, {
+      hasSession: Boolean(nextSession),
+      recoveryActive: Boolean(recoverySession || recoveryRedirectPending),
+      recoveryErrorActive: recoveryRedirectErrorActive,
+      resetRequestComplete,
+      userChanged: Boolean(nextSession && nextSession.user.id !== session?.user?.id),
+    });
+    switch (action) {
+      case "show-recovery":
+        showPasswordRecovery(nextSession);
+        break;
+      case "show-signed-out":
+        showSignedOut();
+        break;
+      case "hold-reset-request":
+        break;
+      case "hold-recovery-error":
+        break;
+      case "hold-recovery":
+        if (redirectWasPending && nextSession) showPasswordRecovery(nextSession);
+        break;
+      case "prepare-ledger":
+        session = nextSession;
+        setTimeout(() => { void prepareLedger(nextSession); }, 0);
+        break;
+      case "refresh-recovery-session":
+        if (redirectWasPending && !recoverySession) showPasswordRecovery(nextSession);
+        else {
+          session = nextSession;
+          recoverySession = nextSession;
+        }
+        break;
+      case "refresh-session":
+        session = nextSession;
+        break;
+      default:
+        break;
+    }
+  }
+
   async function initialize() {
     if (!configured) {
       document.documentElement.classList.remove("cloud-configured", "cloud-auth-locked");
@@ -247,21 +358,18 @@
       if (footer) footer.textContent = "数据仅保存在本机浏览器 · 可通过标题栏数据工具导出完整 JSON 备份";
       return;
     }
-    const authSubmitButton = authForm?.querySelector("button[type='submit']");
     authOverlay.hidden = false;
-    authOverlay.setAttribute("aria-busy", "true");
-    if (authSubmitButton) authSubmitButton.disabled = true;
+    setAuthBusy(true);
     setAuthMessage("正在连接云端…");
     try {
       await loadSupabaseLibrary();
     } catch (error) {
       showSignedOut();
       setAuthMessage(error.message, "error");
-      authOverlay.setAttribute("aria-busy", "false");
+      setAuthBusy(false);
       return;
     }
-    authOverlay.setAttribute("aria-busy", "false");
-    if (authSubmitButton) authSubmitButton.disabled = false;
+    setAuthBusy(false);
     setAuthMessage("");
 
     client = window.supabase.createClient(config.url, config.publishableKey, {
@@ -275,47 +383,123 @@
     window.supabaseLedgerClient = client;
     if (footer) footer.textContent = "数据已启用 Supabase 云端同步 · 请定期导出 JSON 备份";
 
+    client.auth.onAuthStateChange(handleAuthStateChange);
     const { data, error } = await client.auth.getSession();
+    if (recoveryRedirectErrorActive) {
+      showSignedOut();
+      setAuthMessage("重置链接已失效，请重新发送重置邮件。", "error");
+      return;
+    }
     if (error) setAuthMessage(error.message, "error");
+    if (recoverySession) return;
+    if (recoveryRedirectPending) {
+      if (data?.session) showPasswordRecovery(data.session);
+      else {
+        recoveryRedirectPending = false;
+        showSignedOut();
+        setAuthMessage("重置链接已失效，请重新发送重置邮件。", "error");
+      }
+      return;
+    }
     if (data?.session) await prepareLedger(data.session);
     else showSignedOut();
+  }
 
-    client.auth.onAuthStateChange((event, nextSession) => {
-      if (event === "SIGNED_OUT" || !nextSession) showSignedOut();
-      else if (event === "SIGNED_IN" && nextSession.user.id !== session?.user?.id) prepareLedger(nextSession);
-      else if (event === "TOKEN_REFRESHED") session = nextSession;
+  async function requestPasswordReset() {
+    const email = authEmail.value.trim();
+    const validationMessage = AuthFlowModel.validateResetEmail(email);
+    if (validationMessage) {
+      setAuthMessage(validationMessage, "error");
+      return;
+    }
+    resetRequestComplete = false;
+    await runAuthRequest("正在发送重置邮件…", async () => {
+      const { error } = await client.auth.resetPasswordForEmail(email, {
+        redirectTo: AuthFlowModel.getRecoveryRedirect(location),
+      });
+      if (error) throw error;
+      resetRequestComplete = true;
+      setAuthMessage(AuthFlowModel.RESET_SENT_MESSAGE, "success");
     });
   }
 
-  authModeButton?.addEventListener("click", () => setAuthMode(authMode === "signin" ? "signup" : "signin"));
+  async function updateRecoveredPassword() {
+    if (!recoverySession) {
+      setAuthMessage("重置链接已失效，请重新发送重置邮件。", "error");
+      return;
+    }
+    const password = authPassword.value;
+    const confirmation = authConfirmPassword.value;
+    const validationMessage = AuthFlowModel.validateNewPassword(password, confirmation);
+    if (validationMessage) {
+      setAuthMessage(validationMessage, "error");
+      return;
+    }
+    await runAuthRequest("正在保存新密码…", async () => {
+      const { error } = await client.auth.updateUser({ password });
+      if (error) throw error;
+      const nextSession = recoverySession;
+      recoverySession = null;
+      authPassword.value = "";
+      authConfirmPassword.value = "";
+      setAuthMessage("");
+      window.showToast?.("密码已更新");
+      await prepareLedger(nextSession);
+    });
+  }
 
-  authForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  async function submitCredentials() {
     const email = authEmail.value.trim();
     const password = authPassword.value;
-    if (!email || password.length < 8) {
+    const emailError = AuthFlowModel.validateResetEmail(email);
+    if (emailError || password.length < 8) {
       setAuthMessage("请输入有效邮箱，密码至少 8 位。", "error");
       return;
     }
-    authForm.querySelector("button[type='submit']").disabled = true;
-    setAuthMessage(authMode === "signup" ? "正在创建账号…" : "正在登录…");
-    const result = authMode === "signup"
-      ? await client.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: `${location.origin}${location.pathname}` },
-        })
-      : await client.auth.signInWithPassword({ email, password });
-    authForm.querySelector("button[type='submit']").disabled = false;
-    if (result.error) {
-      setAuthMessage(result.error.message, "error");
+    const signingUp = authMode === "signup";
+    await runAuthRequest(signingUp ? "正在创建账号…" : "正在登录…", async () => {
+      const result = signingUp
+        ? await client.auth.signUp({
+            email,
+            password,
+            options: { emailRedirectTo: AuthFlowModel.getRecoveryRedirect(location) },
+          })
+        : await client.auth.signInWithPassword({ email, password });
+      if (result.error) throw result.error;
+      if (signingUp && !result.data.session) {
+        setAuthMessage("注册成功，请打开邮箱确认后再登录。", "success");
+        return;
+      }
+      setAuthMessage("");
+    });
+  }
+
+  function dismissRecoveryRedirectError() {
+    recoveryRedirectErrorActive = false;
+  }
+
+  authForgotPasswordButton?.addEventListener("click", () => {
+    dismissRecoveryRedirectError();
+    setAuthMode("request-reset");
+  });
+  authModeButton?.addEventListener("click", () => {
+    dismissRecoveryRedirectError();
+    const target = AuthFlowModel.getAuthView(authMode).modeButtonTarget;
+    if (target) setAuthMode(target);
+  });
+
+  authForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    dismissRecoveryRedirectError();
+    if (authMode === "request-reset") {
+      await requestPasswordReset();
       return;
     }
-    if (authMode === "signup" && !result.data.session) {
-      setAuthMessage("注册成功，请打开邮箱确认后再登录。", "success");
+    if (authMode === "update-password") {
+      await updateRecoveredPassword();
       return;
     }
-    setAuthMessage("");
+    await submitCredentials();
   });
 
   accountButton?.addEventListener("click", () => { accountOverlay.hidden = false; });

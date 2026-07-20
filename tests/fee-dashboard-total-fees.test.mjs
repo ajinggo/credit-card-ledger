@@ -42,6 +42,6 @@ test("monthly trend aggregates fees without requiring point values", () => {
 });
 
 test("dashboard script cache identifies the fee-cost build", () => {
-  assert.match(indexHtml, /app\.js\?v=73/);
-  assert.match(appJs, /window\.__pointsLedgerBuild = "mobile-responsive-v73"/);
+  assert.match(indexHtml, /app\.js\?v=74/);
+  assert.match(appJs, /window\.__pointsLedgerBuild = "scroll-performance-v74"/);
 });
