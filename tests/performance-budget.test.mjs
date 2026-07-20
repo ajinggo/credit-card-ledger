@@ -430,10 +430,10 @@ test("app exposes the scroll performance v74 build marker", () => {
   assert.match(appJs, /window\.__pointsLedgerBuild = "scroll-performance-v74";/);
 });
 
-test("index loads the v82 performance stylesheet", () => {
+test("index loads the v83 performance stylesheet", () => {
   assertTagWithAttributes(indexHtml, "link", {
     rel: "stylesheet",
-    href: "./organic-liquid.css?v=82",
+    href: "./organic-liquid.css?v=83",
   });
 });
 
@@ -444,13 +444,13 @@ test("index loads the v74 application script", () => {
 test("asset tag validator accepts harmless HTML formatting changes", () => {
   assertTagWithAttributes(`
     <link
-      href = './organic-liquid.css?v=82'
+      href = './organic-liquid.css?v=83'
       media="all"
       REL = "stylesheet"
     />
   `, "link", {
     rel: "stylesheet",
-    href: "./organic-liquid.css?v=82",
+    href: "./organic-liquid.css?v=83",
   });
   assertTagWithAttributes(`
     <script
@@ -462,9 +462,9 @@ test("asset tag validator accepts harmless HTML formatting changes", () => {
 
 test("asset tag validator rejects data attributes in place of real asset attributes", () => {
   assert.throws(() => assertTagWithAttributes(
-    '<link rel="stylesheet" data-href="./organic-liquid.css?v=82" />',
+    '<link rel="stylesheet" data-href="./organic-liquid.css?v=83" />',
     "link",
-    { rel: "stylesheet", href: "./organic-liquid.css?v=82" },
+    { rel: "stylesheet", href: "./organic-liquid.css?v=83" },
   ));
   assert.throws(() => assertTagWithAttributes(
     '<script data-src="./app.js?v=74"></script>',
@@ -475,9 +475,9 @@ test("asset tag validator rejects data attributes in place of real asset attribu
 
 test("asset tag validator rejects target tags inside HTML comments", () => {
   assert.throws(() => assertTagWithAttributes(
-    '<!-- <link rel="stylesheet" href="./organic-liquid.css?v=82" /> -->',
+    '<!-- <link rel="stylesheet" href="./organic-liquid.css?v=83" /> -->',
     "link",
-    { rel: "stylesheet", href: "./organic-liquid.css?v=82" },
+    { rel: "stylesheet", href: "./organic-liquid.css?v=83" },
   ));
   assert.throws(() => assertTagWithAttributes(
     '<!-- <script src="./app.js?v=74"></script> -->',
@@ -488,9 +488,9 @@ test("asset tag validator rejects target tags inside HTML comments", () => {
 
 test("asset tag validator rejects case-changed asset URL paths", () => {
   assert.throws(() => assertTagWithAttributes(
-    '<link rel="stylesheet" href="./ORGANIC-LIQUID.CSS?v=82" />',
+    '<link rel="stylesheet" href="./ORGANIC-LIQUID.CSS?v=83" />',
     "link",
-    { rel: "stylesheet", href: "./organic-liquid.css?v=82" },
+    { rel: "stylesheet", href: "./organic-liquid.css?v=83" },
   ));
   assert.throws(() => assertTagWithAttributes(
     '<script src="./APP.JS?v=74"></script>',

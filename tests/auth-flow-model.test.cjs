@@ -223,6 +223,6 @@ test("auth events follow the complete precedence matrix", () => {
 
 test("auth model loads before the cloud controller", () => {
   const modelIndex = indexHtml.indexOf("auth-flow-model.js?v=1");
-  const cloudIndex = indexHtml.indexOf("cloud-sync.js?v=2");
+  const cloudIndex = indexHtml.indexOf("cloud-sync.js?v=3");
   assert.ok(modelIndex > -1 && cloudIndex > modelIndex);
 });

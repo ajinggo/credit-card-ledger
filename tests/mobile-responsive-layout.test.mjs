@@ -94,7 +94,7 @@ test("all phone drawers cover the viewport with scrolling bodies", () => {
 });
 
 test("mobile assets use fresh cache versions", () => {
-  assert.match(indexHtml, /organic-liquid\.css\?v=82/);
+  assert.match(indexHtml, /organic-liquid\.css\?v=83/);
   assert.match(indexHtml, /app\.js\?v=74/);
   assert.match(appJs, /window\.__pointsLedgerBuild = "scroll-performance-v74"/);
 });

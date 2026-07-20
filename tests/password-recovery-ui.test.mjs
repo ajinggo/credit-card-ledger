@@ -132,3 +132,13 @@ test("auth requests restore every command through finally", () => {
   );
   assert.match(cloudSync, /authForm\.querySelectorAll\("button"\)[\s\S]*button\.disabled = busy/);
 });
+
+test("password recovery ships the v83 stylesheet", () => {
+  assert.match(indexHtml, /organic-liquid\.css\?v=83/);
+});
+
+test("auth model loads before the v3 cloud controller", () => {
+  const modelIndex = indexHtml.indexOf("auth-flow-model.js?v=1");
+  const cloudIndex = indexHtml.indexOf("cloud-sync.js?v=3");
+  assert.ok(modelIndex > -1 && cloudIndex > modelIndex);
+});
