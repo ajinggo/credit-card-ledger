@@ -146,6 +146,18 @@ test("recovery URL detection accepts query or fragment type", () => {
   assert.equal(AuthFlowModel.isRecoveryLocation({ search: "?type=signup", hash: "" }), false);
 });
 
+test("recovery URL detection accepts Supabase expired-link redirects without a type", () => {
+  assert.equal(AuthFlowModel.isRecoveryLocation({
+    search: "?error=access_denied&error_code=otp_expired",
+    hash: "#error=access_denied&error_code=otp_expired&sb=",
+  }), true);
+  assert.equal(AuthFlowModel.isRecoveryLocation({
+    search: "",
+    hash: "#error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired",
+  }), true);
+  assert.equal(AuthFlowModel.isRecoveryLocation({ search: "?error_code=other", hash: "" }), false);
+});
+
 test("auth events follow the complete precedence matrix", () => {
   const cases = [
     {
@@ -177,6 +189,12 @@ test("auth events follow the complete precedence matrix", () => {
       event: "INITIAL_SESSION",
       state: { hasSession: false, resetRequestComplete: false, recoveryActive: false, userChanged: false },
       expected: "show-signed-out",
+    },
+    {
+      name: "a sessionless initial event holds a pending recovery redirect",
+      event: "INITIAL_SESSION",
+      state: { hasSession: false, resetRequestComplete: false, recoveryActive: true, userChanged: false },
+      expected: "hold-recovery",
     },
     {
       name: "signed in holds active recovery",

@@ -115,18 +115,23 @@
   }
 
   function isRecoveryLocation(locationLike) {
-    return /(?:^|[?&#])type=recovery(?:[&#]|$)/.test(
-      `${locationLike.search || ""}${locationLike.hash || ""}`,
-    );
+    const searchParams = new URLSearchParams(String(locationLike.search || "").replace(/^\?/, ""));
+    const hashParams = new URLSearchParams(String(locationLike.hash || "").replace(/^#/, ""));
+    return searchParams.get("type") === "recovery"
+      || hashParams.get("type") === "recovery"
+      || searchParams.get("error_code") === "otp_expired"
+      || hashParams.get("error_code") === "otp_expired";
   }
 
   function getAuthEventAction(event, state) {
     if (event === "PASSWORD_RECOVERY" && state.hasSession) return "show-recovery";
     if (state.resetRequestComplete && !state.hasSession) return "hold-reset-request";
-    if (event === "SIGNED_OUT" || !state.hasSession) return "show-signed-out";
+    if (event === "SIGNED_OUT") return "show-signed-out";
     if (state.recoveryActive) {
+      if (!state.hasSession) return "hold-recovery";
       return event === "TOKEN_REFRESHED" ? "refresh-recovery-session" : "hold-recovery";
     }
+    if (!state.hasSession) return "show-signed-out";
     if (event === "SIGNED_IN" && state.userChanged) return "prepare-ledger";
     if (event === "TOKEN_REFRESHED") return "refresh-session";
     return "none";
