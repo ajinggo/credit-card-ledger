@@ -125,6 +125,20 @@ test("recovery event and URL guard run before initial ledger preparation", () =>
   assert.match(cloudSync, /重置链接已失效，请重新发送重置邮件。/);
 });
 
+test("expired recovery redirects block existing sessions until the user chooses another auth action", () => {
+  assert.match(cloudSync, /AuthFlowModel\.getRecoveryLocationState\(location\)/);
+  assert.match(cloudSync, /recoveryRedirectPending\s*=\s*recoveryLocationState === "recovery"/);
+  assert.match(cloudSync, /recoveryRedirectErrorActive\s*=\s*recoveryLocationState === "expired"/);
+  assert.match(cloudSync, /recoveryErrorActive:\s*recoveryRedirectErrorActive/);
+  assert.match(cloudSync, /case "hold-recovery-error":\s*break/);
+  assert.match(
+    cloudSync,
+    /if \(recoveryRedirectErrorActive\) \{[\s\S]*showSignedOut\(\)[\s\S]*重置链接已失效，请重新发送重置邮件。[\s\S]*return/,
+  );
+  assert.match(cloudSync, /function dismissRecoveryRedirectError\(\)[\s\S]*recoveryRedirectErrorActive = false/);
+  assert.match(cloudSync, /authForgotPasswordButton[\s\S]*dismissRecoveryRedirectError\(\)[\s\S]*setAuthMode\("request-reset"\)/);
+});
+
 test("auth requests restore every command through finally", () => {
   assert.match(
     cloudSync,

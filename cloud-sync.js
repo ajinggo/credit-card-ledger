@@ -66,7 +66,9 @@
   let client = null;
   let session = null;
   let recoverySession = null;
-  let recoveryRedirectPending = AuthFlowModel.isRecoveryLocation(location);
+  const recoveryLocationState = AuthFlowModel.getRecoveryLocationState(location);
+  let recoveryRedirectPending = recoveryLocationState === "recovery";
+  let recoveryRedirectErrorActive = recoveryLocationState === "expired";
   let resetRequestComplete = false;
   let authMode = "signin";
   let syncTimer = null;
@@ -161,6 +163,7 @@
     session = nextSession;
     recoverySession = null;
     recoveryRedirectPending = false;
+    recoveryRedirectErrorActive = false;
     resetRequestComplete = false;
     authOverlay.hidden = true;
     accountButton.hidden = false;
@@ -171,6 +174,7 @@
     session = nextSession;
     recoverySession = nextSession;
     recoveryRedirectPending = false;
+    recoveryRedirectErrorActive = false;
     resetRequestComplete = false;
     document.documentElement.classList.add("cloud-auth-locked");
     authOverlay.hidden = false;
@@ -310,6 +314,7 @@
     const action = AuthFlowModel.getAuthEventAction(event, {
       hasSession: Boolean(nextSession),
       recoveryActive: Boolean(recoverySession || recoveryRedirectPending),
+      recoveryErrorActive: recoveryRedirectErrorActive,
       resetRequestComplete,
       userChanged: Boolean(nextSession && nextSession.user.id !== session?.user?.id),
     });
@@ -321,6 +326,8 @@
         showSignedOut();
         break;
       case "hold-reset-request":
+        break;
+      case "hold-recovery-error":
         break;
       case "hold-recovery":
         if (redirectWasPending && nextSession) showPasswordRecovery(nextSession);
@@ -378,6 +385,11 @@
 
     client.auth.onAuthStateChange(handleAuthStateChange);
     const { data, error } = await client.auth.getSession();
+    if (recoveryRedirectErrorActive) {
+      showSignedOut();
+      setAuthMessage("重置链接已失效，请重新发送重置邮件。", "error");
+      return;
+    }
     if (error) setAuthMessage(error.message, "error");
     if (recoverySession) return;
     if (recoveryRedirectPending) {
@@ -462,14 +474,23 @@
     });
   }
 
-  authForgotPasswordButton?.addEventListener("click", () => setAuthMode("request-reset"));
+  function dismissRecoveryRedirectError() {
+    recoveryRedirectErrorActive = false;
+  }
+
+  authForgotPasswordButton?.addEventListener("click", () => {
+    dismissRecoveryRedirectError();
+    setAuthMode("request-reset");
+  });
   authModeButton?.addEventListener("click", () => {
+    dismissRecoveryRedirectError();
     const target = AuthFlowModel.getAuthView(authMode).modeButtonTarget;
     if (target) setAuthMode(target);
   });
 
   authForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
+    dismissRecoveryRedirectError();
     if (authMode === "request-reset") {
       await requestPasswordReset();
       return;

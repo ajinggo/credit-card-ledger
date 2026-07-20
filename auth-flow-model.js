@@ -114,17 +114,28 @@
     return `${locationLike.origin}${locationLike.pathname}`;
   }
 
-  function isRecoveryLocation(locationLike) {
+  function getRecoveryLocationState(locationLike) {
     const searchParams = new URLSearchParams(String(locationLike.search || "").replace(/^\?/, ""));
     const hashParams = new URLSearchParams(String(locationLike.hash || "").replace(/^#/, ""));
-    return searchParams.get("type") === "recovery"
-      || hashParams.get("type") === "recovery"
-      || searchParams.get("error_code") === "otp_expired"
-      || hashParams.get("error_code") === "otp_expired";
+    if (
+      searchParams.get("error_code") === "otp_expired"
+      || hashParams.get("error_code") === "otp_expired"
+    ) {
+      return "expired";
+    }
+    if (searchParams.get("type") === "recovery" || hashParams.get("type") === "recovery") {
+      return "recovery";
+    }
+    return "none";
+  }
+
+  function isRecoveryLocation(locationLike) {
+    return getRecoveryLocationState(locationLike) === "recovery";
   }
 
   function getAuthEventAction(event, state) {
     if (event === "PASSWORD_RECOVERY" && state.hasSession) return "show-recovery";
+    if (state.recoveryErrorActive) return "hold-recovery-error";
     if (state.resetRequestComplete && !state.hasSession) return "hold-reset-request";
     if (event === "SIGNED_OUT") return "show-signed-out";
     if (state.recoveryActive) {
@@ -143,6 +154,7 @@
     validateResetEmail,
     validateNewPassword,
     getRecoveryRedirect,
+    getRecoveryLocationState,
     isRecoveryLocation,
     getAuthEventAction,
   });

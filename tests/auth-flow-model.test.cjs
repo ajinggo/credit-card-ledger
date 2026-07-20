@@ -146,16 +146,18 @@ test("recovery URL detection accepts query or fragment type", () => {
   assert.equal(AuthFlowModel.isRecoveryLocation({ search: "?type=signup", hash: "" }), false);
 });
 
-test("recovery URL detection accepts Supabase expired-link redirects without a type", () => {
-  assert.equal(AuthFlowModel.isRecoveryLocation({
+test("recovery URL classification distinguishes valid and expired redirects", () => {
+  assert.equal(AuthFlowModel.getRecoveryLocationState({ search: "?type=recovery", hash: "" }), "recovery");
+  assert.equal(AuthFlowModel.getRecoveryLocationState({
     search: "?error=access_denied&error_code=otp_expired",
     hash: "#error=access_denied&error_code=otp_expired&sb=",
-  }), true);
-  assert.equal(AuthFlowModel.isRecoveryLocation({
+  }), "expired");
+  assert.equal(AuthFlowModel.getRecoveryLocationState({
     search: "",
     hash: "#error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired",
-  }), true);
-  assert.equal(AuthFlowModel.isRecoveryLocation({ search: "?error_code=other", hash: "" }), false);
+  }), "expired");
+  assert.equal(AuthFlowModel.getRecoveryLocationState({ search: "?error_code=other", hash: "" }), "none");
+  assert.equal(AuthFlowModel.isRecoveryLocation({ search: "?error_code=otp_expired", hash: "" }), false);
 });
 
 test("auth events follow the complete precedence matrix", () => {
@@ -177,6 +179,18 @@ test("auth events follow the complete precedence matrix", () => {
       event: "INITIAL_SESSION",
       state: { hasSession: false, resetRequestComplete: true, recoveryActive: false, userChanged: false },
       expected: "hold-reset-request",
+    },
+    {
+      name: "expired recovery redirect holds an existing session",
+      event: "INITIAL_SESSION",
+      state: {
+        hasSession: true,
+        recoveryErrorActive: true,
+        resetRequestComplete: false,
+        recoveryActive: false,
+        userChanged: true,
+      },
+      expected: "hold-recovery-error",
     },
     {
       name: "signed out takes precedence over active recovery",
