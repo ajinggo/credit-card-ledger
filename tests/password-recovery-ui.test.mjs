@@ -89,3 +89,46 @@ test("mobile authentication panel is height-bounded and scrollable", () => {
 test("cloud source is available for later recovery wiring", () => {
   assert.match(cloudSync, /function setupCloudLedger/);
 });
+
+test("cloud controller renders every state through the auth flow model", () => {
+  assert.match(cloudSync, /const AuthFlowModel = window\.AuthFlowModel/);
+  assert.match(cloudSync, /AuthFlowModel\.getAuthView\(mode\)/);
+  assert.match(cloudSync, /function setFieldVisible\(field, input, visible\)[\s\S]*input\.disabled = !visible[\s\S]*input\.required = visible/);
+  assert.match(cloudSync, /modeChanged[\s\S]*authPassword\.value = ""[\s\S]*authConfirmPassword\.value = ""/);
+  assert.match(cloudSync, /authPasswordLabel\.textContent = authMode === "update-password" \? "新密码" : "密码"/);
+});
+
+test("reset request uses the current clean URL and privacy-safe message", () => {
+  assert.match(
+    cloudSync,
+    /client\.auth\.resetPasswordForEmail\(email,\s*\{[\s\S]*redirectTo:\s*AuthFlowModel\.getRecoveryRedirect\(location\)/,
+  );
+  assert.match(cloudSync, /resetRequestComplete = true[\s\S]*AuthFlowModel\.RESET_SENT_MESSAGE/);
+});
+
+test("recovery update validates confirmation and updates the authenticated user", () => {
+  assert.match(cloudSync, /AuthFlowModel\.validateNewPassword\(password,\s*confirmation\)/);
+  assert.match(cloudSync, /client\.auth\.updateUser\(\{\s*password\s*\}\)/);
+  assert.match(cloudSync, /window\.showToast\?\.\("密码已更新"\)/);
+  assert.match(cloudSync, /await prepareLedger\(nextSession\)/);
+});
+
+test("recovery event and URL guard run before initial ledger preparation", () => {
+  const listenerIndex = cloudSync.indexOf("client.auth.onAuthStateChange");
+  const sessionIndex = cloudSync.indexOf("client.auth.getSession()");
+  assert.ok(listenerIndex > -1 && sessionIndex > listenerIndex);
+  assert.match(cloudSync, /AuthFlowModel\.getAuthEventAction\(event,/);
+  assert.match(cloudSync, /resetRequestComplete,?/);
+  assert.match(cloudSync, /case "hold-reset-request"/);
+  assert.match(cloudSync, /case "show-recovery"[\s\S]*showPasswordRecovery\(nextSession\)/);
+  assert.match(cloudSync, /recoveryRedirectPending[\s\S]*showPasswordRecovery\(data\.session\)/);
+  assert.match(cloudSync, /重置链接已失效，请重新发送重置邮件。/);
+});
+
+test("auth requests restore every command through finally", () => {
+  assert.match(
+    cloudSync,
+    /async function runAuthRequest[\s\S]*try\s*\{[\s\S]*finally\s*\{\s*setAuthBusy\(false\)/,
+  );
+  assert.match(cloudSync, /authForm\.querySelectorAll\("button"\)[\s\S]*button\.disabled = busy/);
+});
