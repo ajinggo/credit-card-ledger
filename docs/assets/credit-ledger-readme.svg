@@ -1,0 +1,42 @@
+<svg width="1400" height="680" viewBox="0 0 1400 680" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="680" rx="28" fill="#17231F"/>
+  <circle cx="1215" cy="-50" r="320" fill="#273B32"/>
+  <circle cx="80" cy="730" r="260" fill="#22342D"/>
+  <path d="M1052 66C1148 18 1280 20 1373 85" stroke="#879C76" stroke-opacity=".45" stroke-width="1.5" stroke-dasharray="7 10"/>
+  <path d="M1050 128C1184 62 1313 96 1393 165" stroke="#E07157" stroke-opacity=".55" stroke-width="1.5" stroke-dasharray="7 10"/>
+  <g opacity=".86">
+    <rect x="78" y="78" width="42" height="42" rx="13" fill="#F4F0E8"/>
+    <rect x="91" y="96" width="6" height="11" rx="3" fill="#879C76"/>
+    <rect x="101" y="89" width="6" height="18" rx="3" fill="#E07157"/>
+    <rect x="111" y="83" width="6" height="24" rx="3" fill="#F7C68A"/>
+  </g>
+  <text x="142" y="102" fill="#F4F0E8" font-family="Arial, sans-serif" font-size="22" font-weight="700">CREDIT LEDGER</text>
+  <text x="142" y="123" fill="#AAB9AD" font-family="Arial, sans-serif" font-size="12" letter-spacing="2">信用卡管理账本</text>
+  <text x="78" y="246" fill="#F4F0E8" font-family="Arial, 'PingFang SC', sans-serif" font-size="66" font-weight="700">让每一张卡，</text>
+  <text x="78" y="324" fill="#E07157" font-family="Georgia, 'Songti SC', serif" font-size="70" font-weight="600">都有自己的节奏。</text>
+  <text x="82" y="380" fill="#AAB9AD" font-family="Arial, 'PingFang SC', sans-serif" font-size="17">额度 · 账单 · 还款 · 手续费 · 积分</text>
+  <rect x="78" y="452" width="190" height="52" rx="26" fill="#E07157"/>
+  <text x="112" y="485" fill="#17231F" font-family="Arial, 'PingFang SC', sans-serif" font-size="14" font-weight="700">打开产品展示页  ↗</text>
+  <text x="78" y="578" fill="#879C76" font-family="monospace" font-size="12" letter-spacing="1.5">LOCAL-FIRST · SUPABASE-READY · RESPONSIVE</text>
+  <g transform="translate(710 72) rotate(3 300 270)">
+    <rect x="0" y="0" width="556" height="505" rx="28" fill="#FBFAF6" fill-opacity=".97"/>
+    <rect x="0.75" y="0.75" width="554.5" height="503.5" rx="27.25" stroke="#FFFFFF" stroke-opacity=".6" stroke-width="1.5"/>
+    <circle cx="30" cy="31" r="5" fill="#E07157"/><circle cx="48" cy="31" r="5" fill="#D8DBD2"/><circle cx="66" cy="31" r="5" fill="#D8DBD2"/>
+    <text x="30" y="82" fill="#87908A" font-family="monospace" font-size="11" letter-spacing="1.5">MY CARDS / 2026 · 11</text>
+    <text x="30" y="120" fill="#17231F" font-family="Arial, 'PingFang SC', sans-serif" font-size="25" font-weight="700">我的卡片额度</text>
+    <rect x="30" y="148" width="496" height="112" rx="18" fill="#EDF1E8"/>
+    <text x="52" y="180" fill="#87908A" font-family="monospace" font-size="11">总授信额度</text>
+    <text x="52" y="225" fill="#17231F" font-family="Arial, sans-serif" font-size="40" font-weight="700">¥ 86,000</text>
+    <text x="375" y="226" fill="#718A67" font-family="monospace" font-size="11">本月已用 32.4%</text>
+    <rect x="30" y="280" width="496" height="6" rx="3" fill="#E0E5DC"/><rect x="30" y="280" width="161" height="6" rx="3" fill="#E07157"/>
+    <rect x="30" y="312" width="496" height="64" rx="15" fill="#718A67"/>
+    <text x="52" y="339" fill="#FFFFFF" fill-opacity=".8" font-family="monospace" font-size="10">招商银行</text><text x="52" y="363" fill="#FFFFFF" font-family="monospace" font-size="14">•••• 3288</text><text x="386" y="362" fill="#FFFFFF" fill-opacity=".75" font-family="monospace" font-size="10">可用 ¥32,140</text>
+    <rect x="30" y="390" width="496" height="64" rx="15" fill="#35433D"/>
+    <text x="52" y="417" fill="#FFFFFF" fill-opacity=".8" font-family="monospace" font-size="10">浦发银行</text><text x="52" y="441" fill="#FFFFFF" font-family="monospace" font-size="14">•••• 0716</text><text x="386" y="440" fill="#FFFFFF" fill-opacity=".75" font-family="monospace" font-size="10">可用 ¥21,780</text>
+  </g>
+  <g transform="translate(1050 535) rotate(-5)">
+    <rect width="230" height="72" rx="18" fill="#F4F0E8"/>
+    <circle cx="35" cy="36" r="17" fill="#E07157"/><text x="28" y="42" fill="#F4F0E8" font-family="Arial" font-size="18">↗</text>
+    <text x="64" y="29" fill="#87908A" font-family="monospace" font-size="10">积分回报率</text><text x="64" y="51" fill="#17231F" font-family="Arial" font-size="20" font-weight="700">2.86%</text>
+  </g>
+</svg>

@@ -40,11 +40,20 @@
 
 <div align="center">
   <a href="https://credit-card-ledger.vercel.app/landing.html">
-    <img src="https://placehold.co/1400x760/f4f0e8/17231f?text=Credit+Ledger+%7C+Product+Showcase" alt="Credit Ledger 产品展示页预览" width="100%" />
+    <img src="./docs/assets/credit-ledger-readme.svg" alt="Credit Ledger 产品展示页预览" width="100%" />
   </a>
   <br />
-  <sub>点击图片进入产品展示页；点击页面里的「打开账本」进入实际应用。</sub>
+  <sub>点击封面进入产品展示页；点击页面里的「打开账本」进入实际应用。</sub>
 </div>
+
+## 先从这里开始
+
+| 想做什么 | 入口 |
+| --- | --- |
+| 先了解产品 | [打开产品展示页](https://credit-card-ledger.vercel.app/landing.html) |
+| 直接开始记录 | [打开在线账本](https://credit-card-ledger.vercel.app/index.html) |
+| 在本地运行 | `python3 -m http.server 8768` |
+| 查看数据结构 | [`supabase/schema.sql`](./supabase/schema.sql) |
 
 ## 它解决什么
 
@@ -57,6 +66,14 @@
 - 哪些积分、临额或年费任务快到期？
 
 ## 核心能力
+
+<div align="center">
+
+| 01 · 卡片 | 02 · 账单 | 03 · 分析 | 04 · 同步 |
+| --- | --- | --- | --- |
+| 额度、共享额度、账单日、还款日 | 出账、最低还款、部分还款、逾期 | 手续费、积分价值、净收益、趋势 | 本地备份、邮箱登录、多设备同步 |
+
+</div>
 
 | 模块 | 能做什么 |
 | --- | --- |
@@ -118,6 +135,7 @@ python3 -m http.server 8768
 ├── index.html                 # 账本应用页面与表单
 ├── landing.html               # GitHub / Vercel 产品展示页
 ├── landing.css                # 展示页视觉系统与响应式样式
+├── docs/assets/credit-ledger-readme.svg # README 封面视觉
 ├── app.js                     # 数据、计算和交互逻辑
 ├── credit-account-model.js    # 共享额度迁移与计算模型
 ├── card-sort-model.js         # 卡片排序模型
