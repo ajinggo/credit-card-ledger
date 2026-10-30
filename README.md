@@ -1,46 +1,86 @@
-# 信用卡管理账本
+<div align="center">
+  <a href="https://credit-card-ledger.vercel.app/landing.html">
+    <img src="https://img.shields.io/badge/打开产品展示页-E07157?style=for-the-badge&logoColor=FFFFFF" alt="打开产品展示页" />
+  </a>
+  <a href="https://credit-card-ledger.vercel.app/index.html">
+    <img src="https://img.shields.io/badge/直接打开账本-17231F?style=for-the-badge&logoColor=FFFFFF" alt="直接打开账本" />
+  </a>
+</div>
 
-一个面向个人信用卡管理的纯前端账本，集中管理信用卡额度、月度账单、还款进度、手续费记录、积分账户和到期提醒。
+<br />
 
-**在线体验：[https://credit-card-ledger.vercel.app](https://credit-card-ledger.vercel.app)**
+<div align="center">
+  <h1>Credit Ledger</h1>
+  <p><strong>信用卡管理账本</strong></p>
+  <p>让每一张卡，都有自己的节奏。</p>
+  <p>额度、账单、还款、手续费和积分，放进一个清楚的系统里。</p>
+</div>
 
-> 当前版本已启用 Supabase 邮箱登录与云同步。首次登录时可将原有本机账本上传到云端；JSON 导出与导入仍作为独立备份方式保留。
+<p align="center">
+  <a href="https://credit-card-ledger.vercel.app/landing.html">产品展示页</a>
+  ·
+  <a href="https://credit-card-ledger.vercel.app/index.html">在线账本</a>
+  ·
+  <a href="https://github.com/ajinggo/credit-card-ledger/issues">反馈问题</a>
+</p>
 
-## 核心功能
+<p align="center">
+  <img src="https://img.shields.io/badge/HTML5%20%2B%20CSS3%20%2B%20JavaScript-17231F?style=flat-square" alt="HTML5 CSS3 JavaScript" />
+  <img src="https://img.shields.io/badge/Local--first-CBDCC5?style=flat-square&logoColor=17231F" alt="Local first" />
+  <img src="https://img.shields.io/badge/Supabase-ready-E07157?style=flat-square" alt="Supabase ready" />
+  <img src="https://img.shields.io/badge/Responsive-F4F0E8?style=flat-square&logoColor=17231F" alt="Responsive" />
+</p>
 
-- 信用卡额度管理：固定额度、临时额度、可用额度和使用率。
-- 共享额度账户：同一银行的多张卡可共用一个额度池，总授信只计算一次。
-- 月度账单管理：账单月份、账单金额、最低还款额、应还日期和还款方式。
-- 还款闭环：待还、部分已还、已还清和逾期状态。
-- 手续费记录：套现金额、渠道、手续费率、手续费和积分价值。
-- 消费看板：年度消费、月度消费、额度汇总和临额到期提醒。
-- 还款概览：本月待还、已还金额和剩余待还金额。
-- 手续费分析：净收益、平均费率、积分回报率和趋势对比。
-- 积分账户：积分余额、到期时间、滚动有效期和提醒设置。
-- 待办中心：账单日、还款日、临额、积分和年费任务提醒。
-- 数据备份：完整 JSON 导出与导入。
-- 云端账号：邮箱注册、登录、退出和会话恢复。
-- 多设备同步：登录后读取或上传完整账本快照。
-- 隐私模式、深色模式和响应式布局。
+<br />
 
-## 财务口径
+> 一个面向个人信用卡管理的纯前端账本。
+> 先把信息留在本机，再按需要开启 Supabase 云同步；不依赖构建工具，打开浏览器就能开始。
 
-本项目采用以下计算规则，避免账单消费与套现金额重复累计：
+## 先看一眼
 
-```text
-账单消费 = 本期总消费，已经包含套现金额
-套现金额 = 账单消费中的分析子项
+<div align="center">
+  <a href="https://credit-card-ledger.vercel.app/landing.html">
+    <img src="https://placehold.co/1400x760/f4f0e8/17231f?text=Credit+Ledger+%7C+Product+Showcase" alt="Credit Ledger 产品展示页预览" width="100%" />
+  </a>
+  <br />
+  <sub>点击图片进入产品展示页；点击页面里的「打开账本」进入实际应用。</sub>
+</div>
 
-年度消费 = 年度账单消费
-月度消费 = 月度账单消费
-本月已用额度 = 月度账单消费
-```
+## 它解决什么
 
-因此，消费、额度使用率、年费任务和预计还款不会再次把套现金额累加到账单金额上。
+信用卡一多，真正难的不是记录一笔消费，而是同时记住额度归属、账单周期、还款进度、临时额度、年费任务和积分有效期。Credit Ledger 把这些信息放到同一套时间和金额口径里，让你每次打开都能快速回答：
 
-### 共享额度
+- 这个月实际用了多少额度？
+- 哪张卡什么时候要还？还了多少，还差多少？
+- 多张共享额度的卡，整体还剩多少可用额度？
+- 手续费、积分价值和净收益到底是多少？
+- 哪些积分、临额或年费任务快到期？
 
-同一银行的多张信用卡如果共享授信额度，可以在添加或编辑卡片时选择同一个“额度账户”。例如两张浦发卡共用 ¥50,000 额度：
+## 核心能力
+
+| 模块 | 能做什么 |
+| --- | --- |
+| **我的卡片额度** | 记录固定额度、临时额度、可用额度、账单日和还款日 |
+| **共享额度账户** | 同一银行的多张卡共用一个额度池，总授信只计算一次 |
+| **月度账单与还款** | 追踪账单金额、最低还款、实际还款、部分还款和逾期状态 |
+| **手续费汇总** | 记录套现、渠道、费率、手续费、积分价值和净收益 |
+| **消费看板** | 查看年度消费、月度消费、额度使用率和临额到期提醒 |
+| **积分账户** | 管理航空里程、酒店积分、余额、账号、到期日和滚动有效期 |
+| **待办中心** | 汇总账单日、还款日、临额、积分和年费任务 |
+| **数据工具** | 一键导出或导入完整 JSON 备份 |
+| **云端账号** | 邮箱登录、会话恢复、多设备读取与上传账本快照 |
+
+## 设计取向
+
+- **本地优先**：未登录时，数据只保存在当前浏览器的 `localStorage`。
+- **需要时再同步**：登录 Supabase 后，才会读取或上传云端账本快照。
+- **少录敏感信息**：建议只保存银行名称和卡片尾号，不保存完整卡号、CVV、交易密码或身份证信息。
+- **清楚的金额口径**：账单消费已经包含套现金额，套现只作为分析子项，不会被重复计入年度消费和额度使用。
+- **可随时备份**：JSON 导出和导入独立于云同步，方便迁移和恢复。
+
+## 共享额度的计算方式
+
+同一银行的多张信用卡可以选择同一个额度账户。例如两张浦发卡共用 ¥50,000 额度：
 
 ```text
 总授信额度 = ¥50,000（只计算一次）
@@ -48,17 +88,11 @@
 共享额度可用 = 额度账户总额 - 两张卡当月账单金额之和
 ```
 
-账单日、还款日、年费政策、月度账单、还款状态和手续费记录仍分别保存在每张卡下。独立额度的卡片则使用各自单独的额度账户。
+每张卡仍然独立保存账单日、还款日、年费政策、月度账单、还款状态和手续费记录。
 
-## 使用方式
+## 运行项目
 
-直接访问在线版本：
-
-[打开信用卡管理账本](https://credit-card-ledger.vercel.app)
-
-也可以下载项目后直接打开 `index.html`。项目不依赖构建工具或后端服务。
-
-### 本地运行
+项目没有 Node.js 构建步骤，可以直接打开页面：
 
 ```bash
 git clone https://github.com/ajinggo/credit-card-ledger.git
@@ -66,109 +100,73 @@ cd credit-card-ledger
 open index.html
 ```
 
-如需通过本地 HTTP 服务运行：
+需要本地 HTTP 服务时：
 
 ```bash
 python3 -m http.server 8768
 ```
 
-然后访问：
+然后打开：
 
-```text
-http://127.0.0.1:8768/
-```
-
-## 数据与隐私
-
-- 未登录时使用 `localStorage` 保存卡片、额度账户、账单、手续费记录、积分账户和设置。
-- 登录后可将完整账本快照同步到 Supabase，在不同设备上读取同一份数据。
-- `file://` 本地页面与 Vercel 在线地址拥有各自独立的数据空间。
-- 更换浏览器、清理网站数据或更换域名前，请先导出完整备份。
-- 建议只保存银行名称和卡片尾号，不要录入完整卡号、CVV、交易密码或身份证信息。
-- GitHub 仓库只保存网站代码，不保存浏览器中的个人账本数据。
+- 产品展示页：<http://127.0.0.1:8768/landing.html>
+- 账本应用：<http://127.0.0.1:8768/>
 
 ## 项目结构
 
 ```text
 .
-├── index.html          # 页面结构与表单
-├── app.js              # 数据、计算和交互逻辑
-├── credit-account-model.js # 共享额度迁移与计算模型
-├── styles.css          # 基础样式
-├── organic-liquid.css  # 当前视觉系统与响应式样式
-├── cloud-sync.js       # Supabase 登录与云同步
-├── supabase-config.js  # Supabase 公开客户端配置
-├── supabase/
-│   └── schema.sql      # 数据表、显式授权和 RLS 策略
-├── tests/              # 共享额度与界面回归测试
-├── .gitignore
-└── .vercelignore
+├── index.html                 # 账本应用页面与表单
+├── landing.html               # GitHub / Vercel 产品展示页
+├── landing.css                # 展示页视觉系统与响应式样式
+├── app.js                     # 数据、计算和交互逻辑
+├── credit-account-model.js    # 共享额度迁移与计算模型
+├── card-sort-model.js         # 卡片排序模型
+├── fee-visibility-model.js    # 手续费指标显示模型
+├── styles.css                 # 基础样式
+├── organic-liquid.css         # 账本视觉系统与移动端样式
+├── cloud-sync.js              # Supabase 登录与云同步
+├── supabase-config.js         # Supabase 公开客户端配置
+├── supabase/schema.sql        # 数据表、授权与 RLS 策略
+├── tests/                     # 共享额度、布局和交互回归测试
+└── vercel.json                # 根路径重写到产品展示页
 ```
-
-## 技术栈
-
-- HTML5
-- CSS3
-- 原生 JavaScript
-- Browser Local Storage
-- GitHub
-- Vercel
-- Supabase Auth
-- Supabase PostgreSQL + RLS
-
-项目目前不需要 Node.js 构建流程，也没有引入 React、Vue 或其他前端框架。Supabase 客户端固定使用 `@supabase/supabase-js@2.110.2`。
 
 ## Supabase 配置
 
-生产项目已经完成以下配置；部署到其他 Supabase 项目时需要重新执行：
+部署到其他 Supabase 项目时：
 
-1. 在 Supabase 创建项目，并启用 Email/Password 登录。
-2. 在 SQL Editor 执行 `supabase/schema.sql`。
+1. 创建项目并启用 Email / Password 登录。
+2. 在 SQL Editor 执行 [`supabase/schema.sql`](./supabase/schema.sql)。
 3. 在 Authentication URL Configuration 中加入生产地址和本地开发地址。
-4. 将 Project URL 和 Publishable Key 填入 `supabase-config.js`。
+4. 将 Project URL 和 Publishable Key 填入 [`supabase-config.js`](./supabase-config.js)。
 5. 不要在前端写入 `service_role`、secret key 或数据库密码。
 
-`ledger_state` 表为每个用户保存一份 JSONB 账本快照。表已启用 RLS，并通过 `auth.uid() = user_id` 限制用户只能访问自己的数据；`anon` 无表权限，`authenticated` 仅获得必要的增删改查权限。
+`ledger_state` 表为每个用户保存一份 JSONB 账本快照，并通过 `auth.uid() = user_id` 限制用户只能访问自己的数据。
 
-## 开发与发布
-
-修改代码后进行语法检查：
+## 开发检查
 
 ```bash
 node --test tests/credit-account-model.test.cjs
+node --test tests/mobile-responsive-layout.test.mjs
 node tests/toast-layout.test.mjs
 node --check app.js
 node --check cloud-sync.js
+git diff --check
 ```
 
-提交到 GitHub：
+## 发布
 
-```bash
-git add index.html app.js styles.css organic-liquid.css README.md
-git commit -m "Describe the change"
-git push
-```
-
-当前可通过 Vercel CLI 发布生产版本：
+根路径已经通过 [`vercel.json`](./vercel.json) 指向产品展示页；展示页中的按钮会进入 `index.html` 账本应用。
 
 ```bash
 npx vercel --prod
 ```
 
-正式地址保持不变：
+线上地址：
 
-```text
-https://credit-card-ledger.vercel.app
-```
+- 产品展示页：<https://credit-card-ledger.vercel.app/landing.html>
+- 账本应用：<https://credit-card-ledger.vercel.app/index.html>
 
-## 后续计划
-
-- 增加忘记密码、修改密码和登录设备管理。
-- 将 JSONB 快照逐步拆分为卡片、账单、还款和积分流水表。
-- 增加同步冲突提示和更细粒度的离线合并策略。
-- 增加独立还款流水，让一张账单支持多次还款。
-- 增加积分获得、兑换、过期和调整流水。
-
-## 许可说明
+## 许可
 
 本仓库当前未附带开源许可证。未经明确授权，不代表允许复制、修改或再分发。
